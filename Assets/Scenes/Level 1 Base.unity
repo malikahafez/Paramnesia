@@ -1642,6 +1642,124 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3771722244021074311, guid: 5871d30b7751ac04bb8d91dd3ac4cdcc, type: 3}
   m_PrefabInstance: {fileID: 1187391856}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1203094125
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.015
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.664522e-18
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1.51
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6057288869283560245, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7575682826155550299, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+      propertyPath: m_Name
+      value: Enemy_Zombie_Businessman_Male_01
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
+--- !u!1001 &1245967771
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.15873519
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.0000007240567
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.4334015
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238099143340564355, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6632541842769978925, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8125207748077981540, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
+      propertyPath: m_Name
+      value: Enemy_Zombie_Punk_Female_01
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
 --- !u!1001 &1281107217
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3436,3 +3554,5 @@ SceneRoots:
   - {fileID: 1614814294}
   - {fileID: 425316815}
   - {fileID: 1627614601}
+  - {fileID: 1203094125}
+  - {fileID: 1245967771}
