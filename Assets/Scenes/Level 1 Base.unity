@@ -1904,6 +1904,10 @@ PrefabInstance:
       value: Wall_Corner_B (3)
       objectReference: {fileID: 0}
     - target: {fileID: 5202857785776970933, guid: 60195adb725ddee41bcf994d5fb969c9, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.052
+      objectReference: {fileID: 0}
+    - target: {fileID: 5202857785776970933, guid: 60195adb725ddee41bcf994d5fb969c9, type: 3}
       propertyPath: m_LocalScale.y
       value: 3
       objectReference: {fileID: 0}
@@ -1917,7 +1921,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5202857785776970933, guid: 60195adb725ddee41bcf994d5fb969c9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -18.83
+      value: -18.838
       objectReference: {fileID: 0}
     - target: {fileID: 5202857785776970933, guid: 60195adb725ddee41bcf994d5fb969c9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2792,7 +2796,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Color: {r: 0.31132066, g: 0.3376247, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
@@ -2909,7 +2913,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5202857785776970933, guid: 60195adb725ddee41bcf994d5fb969c9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.16
+      value: -1.09
       objectReference: {fileID: 0}
     - target: {fileID: 5202857785776970933, guid: 60195adb725ddee41bcf994d5fb969c9, type: 3}
       propertyPath: m_LocalPosition.y
