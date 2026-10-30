@@ -199,7 +199,7 @@ namespace StealthGame.Editor
         private static void UpgradeZombieControllerAndEnemies(AnimationClip hitClip, AnimationClip deathClip)
         {
             var zombieController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ZombieControllerPath);
-            if (zombieController != null && (hitClip != null || deathClip != null))
+            if (zombieController != null && !(zombieController.layers[0].stateMachine.defaultState.motion is BlendTree) && (hitClip != null || deathClip != null))
             {
                 EnsureParameter(zombieController, "Hit", AnimatorControllerParameterType.Trigger);
                 EnsureParameter(zombieController, "Death", AnimatorControllerParameterType.Trigger);

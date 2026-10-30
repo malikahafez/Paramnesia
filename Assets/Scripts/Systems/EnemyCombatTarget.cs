@@ -57,12 +57,15 @@ namespace StealthGame
         private static readonly int DeathTriggerId = Animator.StringToHash("Death");
         private static readonly int IsDeadBoolId = Animator.StringToHash("IsDead");
 
+        public bool IsFlinching => _flinchTimer > 0.15f;
+        private ZombieAI _ai;
         public bool IsStaggered => _staggerTimer > 0f;
         public bool IsWindingUpAttack => _isWindingUpAttack;
 
         private void Awake()
         {
             currentHealth = maxHealth;
+            _ai = GetComponent<ZombieAI>();
             if (enemyDetection == null) enemyDetection = GetComponent<EnemyDetection>();
             if (enemyAnimator == null) enemyAnimator = GetComponentInChildren<Animator>();
             if (enemyCollider == null) enemyCollider = GetComponent<Collider>();
@@ -86,7 +89,7 @@ namespace StealthGame
             if (IsDead || attacker == null) return false;
 
             // Undetected enemy or attacker sneaking behind the enemy's back
-            bool undetected = enemyDetection != null && !enemyDetection.IsPlayerDetected && _aggroTimer <= 0f;
+            bool undetected = enemyDetection != null && !enemyDetection.IsPlayerDetected && _aggroTimer <= 0f && (_ai == null || !_ai.IsAlerted);
             Vector3 toAttacker = (attacker.position - transform.position);
             toAttacker.y = 0f;
             bool isBehind = toAttacker.sqrMagnitude > 0.001f &&
@@ -128,7 +131,7 @@ namespace StealthGame
                 }
 
                 float knockDist = isCriticalBackstab ? 0.32f : 0.18f;
-                transform.position += _flinchDirection * knockDist;
+                MoveKnockback(_flinchDirection * knockDist);
             }
             else
             {
@@ -166,7 +169,7 @@ namespace StealthGame
                 away.y = 0f;
                 if (away.sqrMagnitude > 0.001f)
                 {
-                    transform.position += away.normalized * 0.42f;
+                    MoveKnockback(away.normalized * 0.42f);
                 }
             }
 
@@ -185,6 +188,15 @@ namespace StealthGame
                 return enemyDetection.player;
             var found = GameObject.FindGameObjectWithTag("Player");
             return found != null ? found.transform : null;
+        }
+
+        private void MoveKnockback(Vector3 displacement)
+        {
+            if (_ai == null) { transform.position += displacement; return; }
+            var agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null && agent.enabled && agent.isOnNavMesh &&
+                UnityEngine.AI.NavMesh.SamplePosition(transform.position + displacement, out var hit, 0.5f, agent.areaMask))
+                agent.Warp(hit.position);
         }
 
         private void Die()
@@ -254,7 +266,7 @@ namespace StealthGame
                 return;
             }
 
-            bool playerDetected = (enemyDetection != null && enemyDetection.IsPlayerDetected) || _aggroTimer > 0f;
+            bool playerDetected = (enemyDetection != null && enemyDetection.IsPlayerDetected) || (_ai == null && _aggroTimer > 0f);
             if (!playerDetected)
             {
                 _isWindingUpAttack = false;
@@ -275,7 +287,7 @@ namespace StealthGame
                 return;
             }
 
-            if (dist > 0.05f)
+            if (dist > 0.05f && (_ai == null || dist <= attackReach))
             {
                 Quaternion targetRot = Quaternion.LookRotation(toPlayer.normalized);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 7f);
@@ -304,7 +316,7 @@ namespace StealthGame
             if (dist > attackReach * 0.85f)
             {
                 Vector3 moveStep = toPlayer.normalized * (chaseSpeed * Time.deltaTime);
-                transform.position += moveStep;
+                if (_ai == null) transform.position += moveStep;
                 _walkCycle += Time.deltaTime * 7.5f;
             }
             else
@@ -314,6 +326,7 @@ namespace StealthGame
                 {
                     _isWindingUpAttack = true;
                     _attackWindupTimer = 0.48f;
+                    if (_ai != null && enemyAnimator != null) enemyAnimator.SetTrigger("Attack");
                 }
             }
         }
@@ -336,7 +349,7 @@ namespace StealthGame
             }
 
             // 2. Procedural zombie walk stride when pursuing player
-            if (_walkCycle > 0.01f && !_isWindingUpAttack && _staggerTimer <= 0f)
+            if (_ai == null && _walkCycle > 0.01f && !_isWindingUpAttack && _staggerTimer <= 0f)
             {
                 float legSwing = Mathf.Sin(_walkCycle) * 24f;
                 if (_leftUpperLegBone != null)
@@ -346,7 +359,7 @@ namespace StealthGame
             }
 
             // 3. Procedural enemy claw/arm strike windup & swing
-            if (_isWindingUpAttack && _rightUpperArmBone != null)
+            if (_ai == null && _isWindingUpAttack && _rightUpperArmBone != null)
             {
                 float p = 1f - Mathf.Clamp01(_attackWindupTimer / 0.48f);
                 float armPitch = p < 0.65f
