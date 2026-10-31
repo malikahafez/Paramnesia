@@ -225,6 +225,9 @@ GameObject:
   - component: {fileID: 8357698976943347233}
   - component: {fileID: 765656739139522791}
   - component: {fileID: 8338262551796911701}
+  - component: {fileID: 6876268326175875384}
+  - component: {fileID: 2262509298807083024}
+  - component: {fileID: 7277731272036793806}
   m_Layer: 0
   m_Name: Enemy_Zombie_Diver_Male_01
   m_TagString: Untagged
@@ -329,6 +332,68 @@ MonoBehaviour:
   onPlayerLost:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6876268326175875384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6223358665694163893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77dbefe0f105e174c961397eec89d560, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.EnemyCombatTarget
+  maxHealth: 100
+  currentHealth: 100
+  enableCounterAttack: 1
+  chaseSpeed: 1.75
+  attackReach: 2.05
+  attackCooldown: 2.2
+  attackDamage: 18
+  enemyDetection: {fileID: 8338262551796911701}
+  enemyAnimator: {fileID: 6049412205471526003}
+  enemyCollider: {fileID: 8357698976943347233}
+--- !u!195 &2262509298807083024
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6223358665694163893}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.3
+  m_Speed: 0.85
+  m_Acceleration: 10
+  avoidancePriority: 50
+  m_AngularSpeed: 360
+  m_StoppingDistance: 0.15
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1.8
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &7277731272036793806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6223358665694163893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2167dbc4c72e7bc4a8ade69e0a773863, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.ZombieAI
+  roamCenter: {fileID: 0}
+  roamRadius: 4
+  roamSpeed: 0.3330062
+  runSpeed: 3.041888
+  idlePause: 2
+  lostSightWait: 3
 --- !u!1001 &5954321130633862189
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -387,7 +452,7 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 2f40a3db4f57e9f4ea5824147804f24b, type: 2}
     - target: {fileID: 95186769661816926, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
       propertyPath: m_ApplyRootMotion
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 137014281929641140, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -592,8 +657,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1763636191463442, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 910179489102145842}
   m_SourcePrefab: {fileID: 100100000, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
+--- !u!1 &5955935198481486911 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1763636191463442, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
+  m_PrefabInstance: {fileID: 5954321130633862189}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &910179489102145842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5955935198481486911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5616527748a605646a045e3a2ed24d31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.ZombieRootMotion
 --- !u!4 &5958160340274133909 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4042656671115192, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
@@ -602,5 +687,10 @@ Transform:
 --- !u!4 &5958673066048547645 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4655401296099088, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
+  m_PrefabInstance: {fileID: 5954321130633862189}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &6049412205471526003 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 95186769661816926, guid: c14250d47b6dfbd448ee47b3fd98d89f, type: 3}
   m_PrefabInstance: {fileID: 5954321130633862189}
   m_PrefabAsset: {fileID: 0}

@@ -60,8 +60,11 @@ namespace StealthGame.Editor
                 controller.layers[0].stateMachine.defaultState = controller.layers[0].stateMachine.AddState("Zombie Idle");
             }
             var idleState = controller.layers[0].stateMachine.defaultState;
-            idleState.name = "Zombie Idle";
-            idleState.motion = idle;
+            if (!(idleState.motion is BlendTree))
+            {
+                idleState.name = "Zombie Idle";
+                idleState.motion = idle;
+            }
             idleState.iKOnFeet = true;
             EditorUtility.SetDirty(idleState);
             Directory.CreateDirectory(Output);
@@ -150,6 +153,7 @@ namespace StealthGame.Editor
                     detection.detectionIndicator = indicator;
                     detection.detectionIndicatorAnchor = animator.GetBoneTransform(HumanBodyBones.Head);
                     indicator.SetActive(false);
+                    if (idleState.motion is BlendTree) ZombieAISetup.Configure(root);
                     PrefabUtility.SaveAsPrefabAsset(root, Output + "/" + root.name + ".prefab");
                     count++;
                 }
@@ -189,6 +193,8 @@ namespace StealthGame.Editor
                 var enemy = new GameObject("Detection check");
                 enemy.transform.position = new Vector3(10000f, 10000f, 10000f);
                 var detection = enemy.AddComponent<EnemyDetection>();
+                Action<string> invoke = method => typeof(EnemyDetection).GetMethod(method,
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(detection, null);
                 detection.eyeOffset = Vector3.zero;
                 detection.targetOffset = Vector3.zero;
                 detection.detectionIndicator = new GameObject("Alert check");
@@ -203,12 +209,12 @@ namespace StealthGame.Editor
                     { if (!condition) throw new InvalidOperationException(message); };
                     player.transform.position = enemy.transform.position + Vector3.forward * 5f;
                     check(detection.CanSeePlayer(), "Target inside cone should be detected.");
-                    detection.SendMessage("Update");
+                    invoke("Update");
                     check(detection.detectionIndicator.activeSelf && detection.IsPlayerDetected,
                         "Alert should appear when the target is detected.");
                     player.transform.position = enemy.transform.position - Vector3.forward * 5f;
                     check(!detection.CanSeePlayer(), "Target behind enemy should not be detected.");
-                    detection.SendMessage("Update");
+                    invoke("Update");
                     check(!detection.detectionIndicator.activeSelf && !detection.IsPlayerDetected,
                         "Alert should disappear when detection is lost.");
                     int logCount = 0;
@@ -219,10 +225,10 @@ namespace StealthGame.Editor
                     {
                         detection.logDetectionChanges = true;
                         player.transform.position = enemy.transform.position + Vector3.forward * 5f;
-                        detection.SendMessage("Update");
-                        detection.SendMessage("Update");
+                        invoke("Update");
+                        invoke("Update");
                         player.transform.position = enemy.transform.position - Vector3.forward * 5f;
-                        detection.SendMessage("Update");
+                        invoke("Update");
                         check(logCount == 2, "Logging should report transitions without repeating every frame.");
                     }
                     finally
@@ -234,6 +240,37 @@ namespace StealthGame.Editor
                     check(!detection.CanSeePlayer(), "Target beside enemy should not be detected.");
                     player.transform.position = enemy.transform.position + Vector3.forward * 11f;
                     check(!detection.CanSeePlayer(), "Target out of range should not be detected.");
+                    detection.eyeOffset = Vector3.up * 1.6f;
+                    detection.targetOffset = Vector3.up * 0.6f;
+                    player.transform.position = enemy.transform.position + Vector3.forward * 0.2f;
+                    check(detection.CanSeePlayer(), "Close crouched target in front should bypass vertical FOV.");
+                    detection.proximityRange = 0f;
+                    check(!detection.CanSeePlayer(), "Disabling proximity should restore the vertical FOV limit.");
+                    detection.proximityRange = 1.25f;
+                    player.transform.position = enemy.transform.position - Vector3.forward * 0.2f;
+                    check(!detection.CanSeePlayer(), "Proximity should not detect targets behind the enemy.");
+                    player.transform.position = enemy.transform.position + Vector3.right * 0.2f;
+                    check(!detection.CanSeePlayer(), "Proximity should not detect targets directly beside the enemy.");
+                    player.transform.position = enemy.transform.position + Vector3.forward * 0.2f + Vector3.right * 0.4f;
+                    check(detection.CanSeePlayer(), "Close targets in the front hemisphere should be detected.");
+                    player.transform.position = enemy.transform.position + Vector3.forward * 1.3f;
+                    check(!detection.CanSeePlayer(), "Targets beyond proximity range must pass the normal FOV.");
+                    player.transform.position = enemy.transform.position + Vector3.forward * 0.2f;
+                    detection.viewRange = 0.5f;
+                    check(!detection.CanSeePlayer(), "Proximity must respect the maximum view range.");
+                    detection.viewRange = 10f;
+                    wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    wall.transform.position = enemy.transform.position + new Vector3(0f, 1.1f, 0.1f);
+                    wall.transform.localScale = new Vector3(0.5f, 2f, 0.05f);
+                    Physics.SyncTransforms();
+                    check(!detection.CanSeePlayer(), "A wall must still block close-range detection.");
+                    wall.GetComponent<Collider>().isTrigger = true;
+                    Physics.SyncTransforms();
+                    check(detection.CanSeePlayer(), "Triggers should not block close-range detection.");
+                    UnityEngine.Object.DestroyImmediate(wall);
+                    wall = null;
+                    detection.eyeOffset = Vector3.zero;
+                    detection.targetOffset = Vector3.zero;
                     player.transform.position = enemy.transform.position + Vector3.forward * 5f;
                     var ownCollider = enemy.AddComponent<SphereCollider>();
                     ownCollider.radius = 1f;
@@ -249,15 +286,15 @@ namespace StealthGame.Editor
                     wall.GetComponent<Collider>().isTrigger = true;
                     Physics.SyncTransforms();
                     check(detection.CanSeePlayer(), "Triggers should not block detection.");
-                    detection.SendMessage("Update");
-                    detection.SendMessage("OnDisable");
+                    invoke("Update");
+                    invoke("OnDisable");
                     check(!detection.detectionIndicator.activeSelf && !detection.IsPlayerDetected,
                         "Disabling detection should hide the alert.");
                     player.SetActive(false);
                     check(!detection.CanSeePlayer(), "Inactive targets should not be detected.");
                     detection.player = null;
                     check(!detection.CanSeePlayer(), "Missing target should not be detected.");
-                    Debug.Log("Enemy detection: all 13 checks passed.");
+                    Debug.Log("Enemy detection: all 22 checks passed.");
                 }
                 finally
                 {

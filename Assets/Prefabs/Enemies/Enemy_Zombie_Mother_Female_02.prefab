@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 5113396551150460747}
   - component: {fileID: 2333888794350139638}
   - component: {fileID: 4718171019066097000}
+  - component: {fileID: 559171775929010670}
+  - component: {fileID: 8904373207534373481}
+  - component: {fileID: 3267470159301422512}
   m_Layer: 0
   m_Name: Enemy_Zombie_Mother_Female_02
   m_TagString: Untagged
@@ -116,6 +119,68 @@ MonoBehaviour:
   onPlayerLost:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &559171775929010670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4084835437822477403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77dbefe0f105e174c961397eec89d560, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.EnemyCombatTarget
+  maxHealth: 100
+  currentHealth: 100
+  enableCounterAttack: 1
+  chaseSpeed: 1.75
+  attackReach: 2.05
+  attackCooldown: 2.2
+  attackDamage: 18
+  enemyDetection: {fileID: 4718171019066097000}
+  enemyAnimator: {fileID: 477847492050588293}
+  enemyCollider: {fileID: 5113396551150460747}
+--- !u!195 &8904373207534373481
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4084835437822477403}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.3
+  m_Speed: 0.85
+  m_Acceleration: 10
+  avoidancePriority: 50
+  m_AngularSpeed: 360
+  m_StoppingDistance: 0.15
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1.8
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &3267470159301422512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4084835437822477403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2167dbc4c72e7bc4a8ade69e0a773863, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.ZombieAI
+  roamCenter: {fileID: 0}
+  roamRadius: 4
+  roamSpeed: 0.3330062
+  runSpeed: 3.041888
+  idlePause: 2
+  lostSightWait: 3
 --- !u!1 &5169232284095352392
 GameObject:
   m_ObjectHideFlags: 0
@@ -387,7 +452,7 @@ PrefabInstance:
       objectReference: {fileID: 9100000, guid: 2f40a3db4f57e9f4ea5824147804f24b, type: 2}
     - target: {fileID: 95911914465307696, guid: 307d9d29af4880045b27ca9862422012, type: 3}
       propertyPath: m_ApplyRootMotion
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 137011458769675094, guid: 307d9d29af4880045b27ca9862422012, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -592,8 +657,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1275266672632250, guid: 307d9d29af4880045b27ca9862422012, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6869536569787974262}
   m_SourcePrefab: {fileID: 100100000, guid: 307d9d29af4880045b27ca9862422012, type: 3}
+--- !u!95 &477847492050588293 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 95911914465307696, guid: 307d9d29af4880045b27ca9862422012, type: 3}
+  m_PrefabInstance: {fileID: 573391619727965877}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &568783544930124591 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4962359021403546, guid: 307d9d29af4880045b27ca9862422012, type: 3}
@@ -604,3 +677,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4607786546479578, guid: 307d9d29af4880045b27ca9862422012, type: 3}
   m_PrefabInstance: {fileID: 573391619727965877}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &572413977378037519 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1275266672632250, guid: 307d9d29af4880045b27ca9862422012, type: 3}
+  m_PrefabInstance: {fileID: 573391619727965877}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6869536569787974262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 572413977378037519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5616527748a605646a045e3a2ed24d31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.ZombieRootMotion
