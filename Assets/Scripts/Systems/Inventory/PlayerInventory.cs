@@ -54,16 +54,39 @@ public class PlayerInventory : MonoBehaviour
     // Spend collectibles (for the store)
     public bool ConsumeCollectible(CollectibleType type, int amount)
     {
-        int currentCount = GetCollectibleCount(type);
-        if (currentCount >= amount)
+        if (type != CollectibleType.Key)
         {
-            collectibleCounts[type] -= amount;
-            Debug.Log($"Spent {amount} of {type}. Remaining: {collectibleCounts[type]}");
-            OnCollectibleChangedEvent?.Invoke(type, GetCollectibleCount(type));
-            return true; // Purchase successful
-        }
+            int currentCount = GetCollectibleCount(type);
+            if (currentCount >= amount)
+            {
+                collectibleCounts[type] -= amount;
+                Debug.Log($"Spent {amount} of {type}. Remaining: {collectibleCounts[type]}");
+                OnCollectibleChangedEvent?.Invoke(type, GetCollectibleCount(type));
+                return true; // Purchase successful
+            }
 
-        Debug.Log($"Not enough {type} to buy this item!");
-        return false; // Not enough currency
+            Debug.Log($"Not enough {type} to buy this item!");
+            return false; // Not enough currency
+        }
+        Debug.Log($"Cannot buy with {type}");
+        return false; // Not correct collectible type
+    }
+
+    //check if the player has enough key fragments to open a door/gate
+    public bool CheckKeyCount(CollectibleType type, int amount, int reqAmount)
+    { 
+        if (type == CollectibleType.Key && amount >= reqAmount)
+        {//enough key fragments
+            Debug.Log($"Success! You have {amount} {type}s and you need {reqAmount}");
+            return true;
+        }
+        else if (type == CollectibleType.Key && amount < reqAmount)
+        {//not enough key fragments
+            Debug.Log($"Not Enough! You have {amount} {type}s and you need {reqAmount}");
+            return false;
+        }
+        //incorrect collectible type (not key)
+        Debug.Log($"Wrong collectible type: {type}");
+        return false;
     }
 }
