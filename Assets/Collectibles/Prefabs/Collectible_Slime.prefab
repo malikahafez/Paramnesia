@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4417792459599602715}
   - component: {fileID: 4737518960691274960}
+  - component: {fileID: 7882739695392877146}
+  - component: {fileID: 1768231795788174765}
   m_Layer: 0
   m_Name: Collectible_Slime
   m_TagString: Untagged
@@ -47,6 +49,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CollectibleRotate
   rotationSpeed: 100
   rotationAxis: 121
+--- !u!114 &7882739695392877146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7663370641544235219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b59a0d4af9f5bb64890376a86f7ce739, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CollectibleItem
+  collectibleType: 1
+  dropAmount: 1
+--- !u!65 &1768231795788174765
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7663370641544235219}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.7, y: 0.7, z: 0.7}
+  m_Center: {x: 0, y: 0.28361493, z: -0.085580826}
 --- !u!1001 &3730791162758652039
 PrefabInstance:
   m_ObjectHideFlags: 0
