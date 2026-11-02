@@ -2,5 +2,6 @@ public enum CollectibleType
 {
     Bone,
     Slime,
-    Heart
+    Heart,
+    Key
 }
