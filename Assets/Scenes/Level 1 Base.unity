@@ -426,9 +426,9 @@ RectTransform:
   - {fileID: 1329343805}
   m_Father: {fileID: 1496953356}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 302, y: -60.643}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -93.4, y: 24.3}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &253179155
@@ -585,6 +585,7 @@ MonoBehaviour:
   dialogueText: {fileID: 538887173}
   animator: {fileID: 1496953359}
   characterAnimator: {fileID: 0}
+  conversationEnded: 0
   audioSource: {fileID: 0}
 --- !u!1001 &277807423
 PrefabInstance:
@@ -2606,6 +2607,7 @@ MonoBehaviour:
   dialogueText: {fileID: 538887173}
   animator: {fileID: 1496953359}
   characterAnimator: {fileID: 6728204819512177075}
+  conversationEnded: 0
   audioSource: {fileID: 0}
 --- !u!114 &755798755
 MonoBehaviour:
@@ -31458,6 +31460,10 @@ PrefabInstance:
       propertyPath: playerCapsule
       value: 
       objectReference: {fileID: 453084650374785182}
+    - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
+      propertyPath: dialogueManager
+      value: 
+      objectReference: {fileID: 755798754}
     - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
       propertyPath: dialogueTrigger
       value: 

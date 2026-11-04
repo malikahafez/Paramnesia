@@ -12,6 +12,7 @@ public class DialogueManager : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public Animator animator;
     public Animator characterAnimator;
+    public bool conversationEnded;
     [Header("Audio")]
     public AudioSource audioSource; // Assign an AudioSource component in the inspector (can be on this GameObject)
 
@@ -37,6 +38,8 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(Dialogue dialogue)
     {
+        conversationEnded = false;
+
         animator.SetBool("IsOpen", true);
         nameText.text = dialogue.name;
         // Unlock and show the mouse cursor for UI interaction
@@ -114,7 +117,7 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    void EndDialogue()
+    public void EndDialogue()
     {
         // Restore cursor state when dialogue ends (lock/hide it again for gameplay)
         Cursor.lockState = CursorLockMode.Locked;
@@ -125,6 +128,7 @@ public class DialogueManager : MonoBehaviour
             audioSource.Stop();
         }
         animator.SetBool("IsOpen", false);
+        conversationEnded = true;
 
         Debug.Log("End of conversation");
     }
