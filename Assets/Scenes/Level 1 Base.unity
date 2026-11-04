@@ -4403,7 +4403,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1471154030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7948,7 +7948,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!137 &459544277668889093
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -10181,6 +10181,14 @@ PrefabInstance:
       propertyPath: cutsceneCam
       value: 
       objectReference: {fileID: 1846978182}
+    - target: {fileID: 692253570183441671, guid: 89003e883be744240a180f94a305418a, type: 3}
+      propertyPath: playerCapsule
+      value: 
+      objectReference: {fileID: 453084650374785182}
+    - target: {fileID: 692253570183441671, guid: 89003e883be744240a180f94a305418a, type: 3}
+      propertyPath: playerVisualModel
+      value: 
+      objectReference: {fileID: 453084650374785182}
     - target: {fileID: 692253570183441671, guid: 89003e883be744240a180f94a305418a, type: 3}
       propertyPath: playerCameraTransform
       value: 
@@ -31326,6 +31334,14 @@ PrefabInstance:
       propertyPath: cutsceneCam
       value: 
       objectReference: {fileID: 450258188}
+    - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
+      propertyPath: playerCapsule
+      value: 
+      objectReference: {fileID: 453084650374785182}
+    - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
+      propertyPath: playerVisualModel
+      value: 
+      objectReference: {fileID: 453084650374785182}
     - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
       propertyPath: playerCameraTransform
       value: 

@@ -1,6 +1,7 @@
 using Unity.Cinemachine;
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class ResidentBehaviour : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class ResidentBehaviour : MonoBehaviour
     [SerializeField] private bool isTalking = false;
     [Header("Player Raycasting")]
     [SerializeField] private Transform playerCameraTransform;
+    [SerializeField] private GameObject playerCapsule;
+
     public float pickupDistance = 5.0f;
     [Header("Cameras")]
     [SerializeField] private CinemachineCamera mainCam;
@@ -30,11 +33,14 @@ public class ResidentBehaviour : MonoBehaviour
     void Update()
     {
         bool cast = Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out RaycastHit raycasthit, pickupDistance);
+        var interactAction = InputSystem.actions.FindAction("Interact");
+
         if (cast && !isTalking)
         {
             // Debug.Log("raycast hit " + isTalking);
 
             if (raycasthit.collider.CompareTag("npc") && Input.GetKeyDown(KeyCode.E))
+            // if (raycasthit.collider.CompareTag("npc") && interactAction != null)
             {
                 Debug.Log("talking mode " + isTalking);
                 Talk();
@@ -44,6 +50,7 @@ public class ResidentBehaviour : MonoBehaviour
 
         }
         else if (isTalking && Input.GetKeyDown(KeyCode.E))
+        // else if (isTalking && interactAction != null)
         {
             Debug.Log("talking mode " + isTalking);
             StopTalking();
@@ -58,6 +65,8 @@ public class ResidentBehaviour : MonoBehaviour
         //switch camera to telescope camera
         cutsceneCam.Priority = 20;
         mainCam.Priority = 10;
+        playerCapsule.SetActive(false);
+
         // if (dialogUI != null)
         // {//enable telescope UI
         //     dialogUI.SetActive(true);
@@ -76,6 +85,8 @@ public class ResidentBehaviour : MonoBehaviour
         anim.SetBool("celebrate", false);
         isTalking = false;
         //switch camera to telescope camera
+        playerCapsule.SetActive(true);
+
         cutsceneCam.Priority = 10;
         mainCam.Priority = 20;
         // if (dialogUI != null)
