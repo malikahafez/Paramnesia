@@ -69,6 +69,19 @@ namespace StealthGame.Editor
             EditorUtility.SetDirty(idleState);
             Directory.CreateDirectory(Output);
             AssetDatabase.Refresh();
+            int count = 0;
+            foreach (string path in Directory.GetFiles("Assets/Prefabs/PolygonZombies/Prefabs", "Zombie_*.prefab"))
+            {
+                Build(AssetDatabase.LoadAssetAtPath<GameObject>(path), controller);
+                count++;
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log("Created " + count + " humanoid zombie enemy prefabs in " + Output);
+        }
+
+        /// <summary>Wraps a humanoid model in an enemy root (collider, vision, alert, AI) and saves it to Prefabs/Enemies.</summary>
+        public static void Build(GameObject source, AnimatorController controller, string name = null, float scale = 1f)
+        {
             const string alertMaterialPath = Output + "/DetectionAlert.mat";
             var alertMaterial = AssetDatabase.LoadAssetAtPath<Material>(alertMaterialPath);
             if (alertMaterial == null)
@@ -77,90 +90,83 @@ namespace StealthGame.Editor
                 alertMaterial.SetColor("_BaseColor", new Color(1f, 0.8f, 0.05f));
                 AssetDatabase.CreateAsset(alertMaterial, alertMaterialPath);
             }
-            int count = 0;
-            foreach (string path in Directory.GetFiles("Assets/PolygonZombies/Prefabs", "Zombie_*.prefab"))
+            var root = new GameObject("Enemy_" + (name ?? source.name));
+            try
             {
-                var source = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                var root = new GameObject("Enemy_" + source.name);
-                try
-                {
-                    var model = (GameObject)PrefabUtility.InstantiatePrefab(source, root.transform);
-                    var animator = model.GetComponentInChildren<Animator>();
-                    if (animator == null || animator.avatar == null || !animator.avatar.isHuman || !animator.avatar.isValid)
-                        throw new InvalidOperationException(source.name + " needs a valid humanoid avatar.");
-                    animator.runtimeAnimatorController = controller;
-                    animator.applyRootMotion = false;
+                var model = (GameObject)PrefabUtility.InstantiatePrefab(source, root.transform);
+                model.transform.localScale *= scale;
+                var animator = model.GetComponentInChildren<Animator>();
+                if (animator == null || animator.avatar == null || !animator.avatar.isHuman || !animator.avatar.isValid)
+                    throw new InvalidOperationException(source.name + " needs a valid humanoid avatar.");
+                animator.runtimeAnimatorController = controller;
+                animator.applyRootMotion = false;
 
-                    var renderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
-                    if (renderers.Length == 0) throw new InvalidOperationException(source.name + " has no active mesh.");
-                    Bounds bounds = renderers[0].bounds;
-                    foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
-                    foreach (var renderer in model.GetComponentsInChildren<Renderer>(true))
+                var renderers = model.GetComponentsInChildren<SkinnedMeshRenderer>();
+                if (renderers.Length == 0) throw new InvalidOperationException(source.name + " has no active mesh.");
+                Bounds bounds = renderers[0].bounds;
+                foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+                foreach (var renderer in model.GetComponentsInChildren<Renderer>(true))
+                {
+                    var materials = renderer.sharedMaterials;
+                    for (int i = 0; i < materials.Length; i++)
                     {
-                        var materials = renderer.sharedMaterials;
-                        for (int i = 0; i < materials.Length; i++)
+                        var sourceMaterial = materials[i];
+                        if (sourceMaterial == null || !sourceMaterial.HasProperty("_Texture")) continue;
+                        string materialPath = Output + "/" + sourceMaterial.name + "_URP.mat";
+                        var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+                        if (material == null)
                         {
-                            var sourceMaterial = materials[i];
-                            if (sourceMaterial == null || sourceMaterial.shader.name != "SyntyStudios/Zombies") continue;
-                            string materialPath = Output + "/" + sourceMaterial.name + "_URP.mat";
-                            var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
-                            if (material == null)
-                            {
-                                material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                                material.SetTexture("_BaseMap", sourceMaterial.GetTexture("_Texture"));
-                                material.SetTextureScale("_BaseMap", sourceMaterial.GetTextureScale("_Texture"));
-                                material.SetTextureOffset("_BaseMap", sourceMaterial.GetTextureOffset("_Texture"));
-                                material.SetFloat("_Smoothness", 0f);
-                                material.SetTexture("_EmissionMap", sourceMaterial.GetTexture("_Emissive"));
-                                material.SetColor("_EmissionColor", sourceMaterial.GetColor("_EmissiveColor"));
-                                material.EnableKeyword("_EMISSION");
-                                AssetDatabase.CreateAsset(material, materialPath);
-                            }
-                            materials[i] = material;
+                            material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                            material.SetTexture("_BaseMap", sourceMaterial.GetTexture("_Texture"));
+                            material.SetTextureScale("_BaseMap", sourceMaterial.GetTextureScale("_Texture"));
+                            material.SetTextureOffset("_BaseMap", sourceMaterial.GetTextureOffset("_Texture"));
+                            material.SetFloat("_Smoothness", 0f);
+                            material.SetTexture("_EmissionMap", sourceMaterial.GetTexture("_Emissive"));
+                            material.SetColor("_EmissionColor", sourceMaterial.GetColor("_EmissiveColor"));
+                            material.EnableKeyword("_EMISSION");
+                            AssetDatabase.CreateAsset(material, materialPath);
                         }
-                        renderer.sharedMaterials = materials;
+                        materials[i] = material;
                     }
-                    var capsule = root.AddComponent<CapsuleCollider>();
-                    capsule.height = bounds.size.y;
-                    capsule.radius = Mathf.Min(0.35f, bounds.size.y * 0.2f);
-                    capsule.center = new Vector3(0f, bounds.center.y, 0f);
-                    var body = root.AddComponent<Rigidbody>();
-                    body.isKinematic = true;
-                    body.useGravity = false;
-                    var detection = root.AddComponent<EnemyDetection>();
-                    detection.eyeOffset = new Vector3(0f, bounds.max.y - 0.2f, 0f);
-                    var indicator = new GameObject("Detection Alert (!)");
-                    indicator.transform.SetParent(root.transform, false);
-                    indicator.transform.localPosition = new Vector3(0f, bounds.max.y + 0.45f, 0f);
-                    indicator.transform.localScale = Vector3.one * 0.65f;
-                    var stem = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                    stem.name = "Exclamation Stem";
-                    stem.transform.SetParent(indicator.transform, false);
-                    stem.transform.localScale = new Vector3(0.12f, 0.18f, 0.12f);
-                    var dot = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    dot.name = "Exclamation Dot";
-                    dot.transform.SetParent(indicator.transform, false);
-                    dot.transform.localPosition = Vector3.down * 0.29f;
-                    dot.transform.localScale = Vector3.one * 0.13f;
-                    foreach (var part in new[] { stem, dot })
-                    {
-                        UnityEngine.Object.DestroyImmediate(part.GetComponent<Collider>());
-                        var mesh = part.GetComponent<Renderer>();
-                        mesh.sharedMaterial = alertMaterial;
-                        mesh.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                        mesh.receiveShadows = false;
-                    }
-                    detection.detectionIndicator = indicator;
-                    detection.detectionIndicatorAnchor = animator.GetBoneTransform(HumanBodyBones.Head);
-                    indicator.SetActive(false);
-                    if (idleState.motion is BlendTree) ZombieAISetup.Configure(root);
-                    PrefabUtility.SaveAsPrefabAsset(root, Output + "/" + root.name + ".prefab");
-                    count++;
+                    renderer.sharedMaterials = materials;
                 }
-                finally { UnityEngine.Object.DestroyImmediate(root); }
+                var capsule = root.AddComponent<CapsuleCollider>();
+                capsule.height = bounds.size.y;
+                capsule.radius = Mathf.Min(0.35f, bounds.size.y * 0.2f);
+                capsule.center = new Vector3(0f, bounds.center.y, 0f);
+                var body = root.AddComponent<Rigidbody>();
+                body.isKinematic = true;
+                body.useGravity = false;
+                var detection = root.AddComponent<EnemyDetection>();
+                detection.eyeOffset = new Vector3(0f, bounds.max.y - 0.2f, 0f);
+                var indicator = new GameObject("Detection Alert (!)");
+                indicator.transform.SetParent(root.transform, false);
+                indicator.transform.localPosition = new Vector3(0f, bounds.max.y + 0.45f, 0f);
+                indicator.transform.localScale = Vector3.one * 0.65f;
+                var stem = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                stem.name = "Exclamation Stem";
+                stem.transform.SetParent(indicator.transform, false);
+                stem.transform.localScale = new Vector3(0.12f, 0.18f, 0.12f);
+                var dot = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                dot.name = "Exclamation Dot";
+                dot.transform.SetParent(indicator.transform, false);
+                dot.transform.localPosition = Vector3.down * 0.29f;
+                dot.transform.localScale = Vector3.one * 0.13f;
+                foreach (var part in new[] { stem, dot })
+                {
+                    UnityEngine.Object.DestroyImmediate(part.GetComponent<Collider>());
+                    var mesh = part.GetComponent<Renderer>();
+                    mesh.sharedMaterial = alertMaterial;
+                    mesh.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    mesh.receiveShadows = false;
+                }
+                detection.detectionIndicator = indicator;
+                detection.detectionIndicatorAnchor = animator.GetBoneTransform(HumanBodyBones.Head);
+                indicator.SetActive(false);
+                if (controller.layers[0].stateMachine.defaultState.motion is BlendTree) ZombieAISetup.Configure(root);
+                PrefabUtility.SaveAsPrefabAsset(root, Output + "/" + root.name + ".prefab");
             }
-            AssetDatabase.SaveAssets();
-            Debug.Log("Created " + count + " humanoid zombie enemy prefabs in " + Output);
+            finally { UnityEngine.Object.DestroyImmediate(root); }
         }
 
         const string VisionMenu = "Tools/Paramnesia/Developer/Show Enemy Vision";
