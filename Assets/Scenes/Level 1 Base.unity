@@ -428,7 +428,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 341, y: -60.643}
+  m_AnchoredPosition: {x: 302, y: -60.643}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &253179155
@@ -475,9 +475,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 270001704}
+      - m_Target: {fileID: 755798754}
         m_TargetAssemblyTypeName: DialogueManager, Assembly-CSharp
         m_MethodName: DisplayNextSentence
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 755798755}
+        m_TargetAssemblyTypeName: DialogueTrigger, Assembly-CSharp
+        m_MethodName: CheckMouseClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -572,6 +584,8 @@ MonoBehaviour:
   nameText: {fileID: 2009211908}
   dialogueText: {fileID: 538887173}
   animator: {fileID: 1496953359}
+  characterAnimator: {fileID: 0}
+  audioSource: {fileID: 0}
 --- !u!1001 &277807423
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1803,10 +1817,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1496953356}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.6599, y: -25.3214}
-  m_SizeDelta: {x: 851.3198, y: 100.6429}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 395, y: -21}
+  m_SizeDelta: {x: 755.4148, y: 100.6429}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &538887173
 MonoBehaviour:
@@ -2558,6 +2572,118 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4702546749944296, guid: fa833c84b0dbee34b84e6427f78feff3, type: 3}
   m_PrefabInstance: {fileID: 739643422}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &755798753
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 755798756}
+  - component: {fileID: 755798755}
+  - component: {fileID: 755798754}
+  m_Layer: 0
+  m_Name: GhostMerchantDialogue
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &755798754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755798753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93865dfc54ed67744bd9bbfd49b7f438, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
+  nameText: {fileID: 2009211908}
+  dialogueText: {fileID: 538887173}
+  animator: {fileID: 1496953359}
+  characterAnimator: {fileID: 6728204819512177075}
+  audioSource: {fileID: 0}
+--- !u!114 &755798755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755798753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d8e7cb1272ffd244ac09fcf6e6161cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
+  dialogue:
+    name: Ghost Merchant
+    lines:
+    - sentence: BOO!
+      animationTrigger: yes
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: Greetings, human!
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: 'Oh, it''s YOU. '
+      animationTrigger: yes
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: Everyone's been whispering about you. I was wondering when you would
+        finally come over.
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: 'Curious thing, not everyone who ends up here lives to tell the tale... '
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: Of course, they can DIE to tell it!
+      animationTrigger: thankyou
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: But it seems to me that your mind is bit... LOST.
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: Never fear, you have come to the right place. Welcome to my SHOP!!!!
+      animationTrigger: celebrate
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: I have everything to fulfil your needs, from magical POTIONS to magical
+        SALVE... But for a PRICE of course.
+      animationTrigger: yes
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: Unfortunately, I don't have anything to jog that MEMORY of yours.
+        You will have to figure that out yourself!
+      animationTrigger: no
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: But I promise you will find something worth your while! ^-^
+      animationTrigger: celebrate
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+--- !u!4 &755798756
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755798753}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.11391, y: 1.46118, z: 0.02134}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &757225771 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4702546749944296, guid: fa833c84b0dbee34b84e6427f78feff3, type: 3}
@@ -4403,7 +4529,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1471154030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5925,7 +6051,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1931005100
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5960,21 +6086,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
   dialogue:
     name: Ghost Merchant
-    sentences:
-    - 'BOO! '
-    - Greetings, human!
-    - Oh, it's YOU.
-    - Everyone's been whispering about you. I was wondering when you would finally
-      come over.
-    - Curious thing, not everyone who ends up here lives to tell the tale...
-    - Of course, they can DIE to tell it!
-    - But it seems to me that your mind is bit... LOST.
-    - Never fear, you have come to the right place. Welcome to my SHOP!!!!
-    - 'I have everything to fulfil your needs, from magical POTIONS to magical SALVE...
-      But for a PRICE of course. '
-    - Unfortunately, I don't have anything to jog that MEMORY of yours. You will
-      have to figure that out yourself!
-    - But I promise you will find something worth your while! ^-^
+    lines:
+    - sentence: BOO!
+      animationTrigger: yes
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
 --- !u!114 &1931005102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31331,6 +31447,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5510825912306206649}
     - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
+      propertyPath: isTalking
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
       propertyPath: cutsceneCam
       value: 
       objectReference: {fileID: 450258188}
@@ -31338,6 +31458,10 @@ PrefabInstance:
       propertyPath: playerCapsule
       value: 
       objectReference: {fileID: 453084650374785182}
+    - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
+      propertyPath: dialogueTrigger
+      value: 
+      objectReference: {fileID: 755798755}
     - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
       propertyPath: playerVisualModel
       value: 
@@ -31351,6 +31475,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
+--- !u!95 &6728204819512177075 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 3562395651169083291, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
+  m_PrefabInstance: {fileID: 6728204819512177074}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6728700038626250572
 Transform:
   m_ObjectHideFlags: 0
@@ -42366,6 +42495,7 @@ SceneRoots:
   - {fileID: 767528752}
   - {fileID: 1592524568}
   - {fileID: 5971577405072045647}
+  - {fileID: 755798756}
   - {fileID: 6728204819512177074}
   - {fileID: 1199822604939879366}
   - {fileID: 3269913989752666806}

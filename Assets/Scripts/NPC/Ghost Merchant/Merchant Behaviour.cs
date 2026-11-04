@@ -18,6 +18,9 @@ public class MerchantBehaviour : MonoBehaviour
     [SerializeField] private CinemachineCamera mainCam;
     [SerializeField] private CinemachineCamera cutsceneCam;
     private IEnumerator myEnumerator;
+
+    [Header("Dialogue Manager")]
+    [SerializeField] private DialogueTrigger dialogueTrigger;
     // [Header("UI Overlay")]
     // [SerializeField] private GameObject dialogUI;
     // [SerializeField] private GameObject mainUI;
@@ -59,7 +62,8 @@ public class MerchantBehaviour : MonoBehaviour
     }
     void Talk()
     {
-        StartCoroutine(myEnumerator);
+        dialogueTrigger.TriggerDialogue();
+        // StartCoroutine(myEnumerator);
         isTalking = true;
         //switch camera to telescope camera
         cutsceneCam.Priority = 20;
@@ -124,4 +128,48 @@ public class MerchantBehaviour : MonoBehaviour
         anim.SetBool("celebrate", true);
 
     }
+
+    // IEnumerator Nod()
+    // {
+    //     //nod head
+    //     anim.SetBool("yes", true);
+    //     anim.SetBool("no", false);
+    //     anim.SetBool("thankyou", false);
+    //     anim.SetBool("celebrate", false);
+    //     yield return null;
+
+
+    // }
+    // IEnumerator ShakeHead()
+    // {
+    //     //shake head
+    //     anim.SetBool("yes", false);
+    //     anim.SetBool("no", true);
+    //     anim.SetBool("thankyou", false);
+    //     anim.SetBool("celebrate", false);
+    //     yield return null;
+
+
+    // }
+    // IEnumerator ThankBow()
+    // {
+    //     //thanking bow
+    //     anim.SetBool("yes", false);
+    //     anim.SetBool("no", false);
+    //     anim.SetBool("thankyou", true);
+    //     anim.SetBool("celebrate", false);
+    //     yield return null;
+    // }
+    // IEnumerator Celebrate()
+    // {
+    //     //celebration
+    //     anim.SetBool("yes", false);
+    //     anim.SetBool("no", false);
+    //     anim.SetBool("thankyou", false);
+    //     anim.SetBool("celebrate", true);
+    //     yield return null;
+
+    // }
+
+
 }
