@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7976a13835ed54cd2a60d7d123688e7d, type: 3}
+  m_Name: DefensePotion
+  m_EditorClassIdentifier: Assembly-CSharp::MerchantItemData
+  itemName: Defense Potion
+  itemDescription: It slows the pulse and deadens the nerves, ensuring that even
+    the most vicious assaults fail to pierce deep enough to stop you.
+  itemIcon: {fileID: -3787448971187316291, guid: 691c20d4d4d1d481887f3426b03e3da8, type: 3}
+  itemPrefab: {fileID: 3335950066021624469, guid: 6e417396ba2c5384886fc163b547fe52, type: 3}
