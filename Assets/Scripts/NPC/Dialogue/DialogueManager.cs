@@ -8,16 +8,30 @@ using UnityEngine.TextCore.Text;
 
 public class DialogueManager : MonoBehaviour
 {
+    // public static DialogueManager Instance;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI dialogueText;
+    // public Button button;
     public Animator animator;
-    public Animator characterAnimator;
+    private Animator characterAnimator;
     public bool conversationEnded;
     [Header("Audio")]
     public AudioSource audioSource; // Assign an AudioSource component in the inspector (can be on this GameObject)
 
     private Queue<DialogueLine> dialogueLines;
     // private Queue<string> sentences;
+
+    // private void Awake()
+    // {
+    //     if (Instance == null)
+    //     {
+    //         Instance = this;
+    //     }
+    //     else
+    //     {
+    //         Destroy(gameObject);
+    //     }
+    // }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -34,11 +48,26 @@ public class DialogueManager : MonoBehaviour
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
+        // button.onClick.RemoveAllListeners();
+        // button.onClick.AddListener(DisplayNextSentence);
     }
 
     public void StartDialogue(Dialogue dialogue)
     {
+        if (dialogue == null)
+        {
+            Debug.LogError("StartDialogue Error: The 'Dialogue' asset is missing or unassigned on the DialogueTrigger component!", this);
+        }
+        if (animator == null)
+        {
+            Debug.LogError("StartDialogue Error: The 'Animator' reference is missing on the DialogueManager component!", this);
+        }
+        if (nameText == null)
+        {
+            Debug.LogError("StartDialogue Error: The 'Name Text' reference is missing on the DialogueManager component!", this);
+        }
         conversationEnded = false;
+        characterAnimator = dialogue.characterAnimator;
 
         animator.SetBool("IsOpen", true);
         nameText.text = dialogue.name;
@@ -52,21 +81,37 @@ public class DialogueManager : MonoBehaviour
         // {
         //     sentences.Enqueue(sentence);
         // }
+        if (dialogueLines == null)
+        {
+            dialogueLines = new Queue<DialogueLine>();
+            Debug.Log("dialogueLines were null, created new queue");
+
+        }
         dialogueLines.Clear();
+        if (dialogue.lines == null || dialogue.lines.Length == 0)
+        {
+            Debug.LogWarning($"Dialogue warning: '{dialogue.name}' has no lines configured in its array!", this);
+        }
 
         foreach (DialogueLine line in dialogue.lines)
         {
             dialogueLines.Enqueue(line);
+            // Debug.Log($"Enqueued sentence: '{line}'");
         }
+        Debug.Log("Total lines enqueued: " + dialogueLines.Count);
         DisplayNextSentence();
     }
 
     public void DisplayNextSentence()
     {
-        characterAnimator.SetBool("thankyou", false);
-        characterAnimator.SetBool("yes", false);
-        characterAnimator.SetBool("no", false);
-        characterAnimator.SetBool("celebrate", false);
+        Debug.Log("inside display next sentence");
+        if (characterAnimator != null)
+        {
+            characterAnimator.SetBool("thankyou", false);
+            characterAnimator.SetBool("yes", false);
+            characterAnimator.SetBool("no", false);
+            characterAnimator.SetBool("celebrate", false);
+        }
         // if (sentences.Count == 0)
         // {
         //     EndDialogue();
@@ -75,6 +120,7 @@ public class DialogueManager : MonoBehaviour
         // string sentence = sentences.Dequeue();
         if (dialogueLines.Count == 0)
         {
+            Debug.Log("no more sentences");
             EndDialogue();
             return;
         }
@@ -131,6 +177,7 @@ public class DialogueManager : MonoBehaviour
         conversationEnded = true;
 
         Debug.Log("End of conversation");
+        characterAnimator = null;
     }
 
 }

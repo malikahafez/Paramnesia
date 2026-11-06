@@ -475,21 +475,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 755798754}
+      - m_Target: {fileID: 270001704}
         m_TargetAssemblyTypeName: DialogueManager, Assembly-CSharp
         m_MethodName: DisplayNextSentence
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 755798755}
-        m_TargetAssemblyTypeName: DialogueTrigger, Assembly-CSharp
-        m_MethodName: CheckMouseClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -584,7 +572,6 @@ MonoBehaviour:
   nameText: {fileID: 2009211908}
   dialogueText: {fileID: 538887173}
   animator: {fileID: 1496953359}
-  characterAnimator: {fileID: 0}
   conversationEnded: 0
   audioSource: {fileID: 0}
 --- !u!1001 &277807423
@@ -2583,7 +2570,6 @@ GameObject:
   m_Component:
   - component: {fileID: 755798756}
   - component: {fileID: 755798755}
-  - component: {fileID: 755798754}
   m_Layer: 0
   m_Name: GhostMerchantDialogue
   m_TagString: Untagged
@@ -2591,24 +2577,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &755798754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 755798753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93865dfc54ed67744bd9bbfd49b7f438, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
-  nameText: {fileID: 2009211908}
-  dialogueText: {fileID: 538887173}
-  animator: {fileID: 1496953359}
-  characterAnimator: {fileID: 6728204819512177075}
-  conversationEnded: 0
-  audioSource: {fileID: 0}
 --- !u!114 &755798755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2671,6 +2639,7 @@ MonoBehaviour:
       animationTrigger: celebrate
       sentenceAudio: {fileID: 0}
       audioVolume: 0
+    characterAnimator: {fileID: 6728204819512177075}
 --- !u!4 &755798756
 Transform:
   m_ObjectHideFlags: 0
@@ -3714,7 +3683,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7575682826155550299, guid: 10eed1c79ff058d4db020adc46e0d663, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3816,7 +3785,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8125207748077981540, guid: 1afc9aeb4330f384dab23da4726510e2, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4706,6 +4675,11 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!95 &1493806337 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1573190227455099412, guid: 89003e883be744240a180f94a305418a, type: 3}
+  m_PrefabInstance: {fileID: 1199822604939879366}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1496953355
 GameObject:
   m_ObjectHideFlags: 0
@@ -6093,6 +6067,7 @@ MonoBehaviour:
       animationTrigger: yes
       sentenceAudio: {fileID: 0}
       audioVolume: 0
+    characterAnimator: {fileID: 0}
 --- !u!114 &1931005102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6408,6 +6383,91 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 0
   m_ApplyActiveColorSpace: 1
+--- !u!1 &1961845317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1961845320}
+  - component: {fileID: 1961845319}
+  m_Layer: 0
+  m_Name: ResidentGhostDialogue
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1961845319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961845317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d8e7cb1272ffd244ac09fcf6e6161cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueTrigger
+  dialogue:
+    name: Resident Ghost
+    lines:
+    - sentence: Hey, buddy
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: Got a second?
+      animationTrigger: thankyou
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: I have a business proposition for you.
+      animationTrigger: yes
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: "I can see you have a certain \u2026 mnemonic predicament"
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: "You need your memories back, and I need parts\u2026"
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: Zombie parts to be exact.
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: "What say you get me 20 BONEs and 15 SLIME flasks, and 5 HEARTs and
+        I give you some spare KEY FRAGMENTs I have lying around\u2026\r\n"
+      animationTrigger: yes
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: AND some of your memories.
+      animationTrigger: 
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    - sentence: So, do we have a deal?
+      animationTrigger: thankyou
+      sentenceAudio: {fileID: 0}
+      audioVolume: 0
+    characterAnimator: {fileID: 1493806337}
+--- !u!4 &1961845320
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961845317}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.85836, y: 0.93608, z: -0.01899}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1984254721
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10303,6 +10363,14 @@ PrefabInstance:
       propertyPath: playerCapsule
       value: 
       objectReference: {fileID: 453084650374785182}
+    - target: {fileID: 692253570183441671, guid: 89003e883be744240a180f94a305418a, type: 3}
+      propertyPath: dialogueManager
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 692253570183441671, guid: 89003e883be744240a180f94a305418a, type: 3}
+      propertyPath: dialogueTrigger
+      value: 
+      objectReference: {fileID: 1961845319}
     - target: {fileID: 692253570183441671, guid: 89003e883be744240a180f94a305418a, type: 3}
       propertyPath: playerVisualModel
       value: 
@@ -31463,7 +31531,7 @@ PrefabInstance:
     - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
       propertyPath: dialogueManager
       value: 
-      objectReference: {fileID: 755798754}
+      objectReference: {fileID: 0}
     - target: {fileID: 7883924991522594648, guid: 8e0c5210bd7ad22459d7122604077e83, type: 3}
       propertyPath: dialogueTrigger
       value: 
@@ -42503,6 +42571,7 @@ SceneRoots:
   - {fileID: 5971577405072045647}
   - {fileID: 755798756}
   - {fileID: 6728204819512177074}
+  - {fileID: 1961845320}
   - {fileID: 1199822604939879366}
   - {fileID: 3269913989752666806}
   - {fileID: 1188887272}

@@ -19,6 +19,10 @@ public class ResidentBehaviour : MonoBehaviour
     [SerializeField] private CinemachineCamera cutsceneCam;
     private IEnumerator myEnumerator;
 
+    [Header("Dialogue Manager")]
+    [SerializeField] private DialogueTrigger dialogueTrigger;
+    // [SerializeField] private DialogueManager dialogueManager;
+
     // [Header("UI Overlay")]
     // [SerializeField] private GameObject dialogUI;
     // [SerializeField] private GameObject mainUI;
@@ -56,11 +60,19 @@ public class ResidentBehaviour : MonoBehaviour
             StopTalking();
             Debug.Log("after disable talking " + isTalking);
         }
+        else if (isTalking && FindFirstObjectByType<DialogueManager>().conversationEnded)
+        {
+            Debug.Log("conversation ended");
+            Debug.Log("talking mode " + isTalking);
+            StopTalking();
+            Debug.Log("after disable talking " + isTalking);
+        }
 
     }
     void Talk()
     {
-        StartCoroutine(myEnumerator);
+        dialogueTrigger.TriggerDialogue();
+        // StartCoroutine(myEnumerator);
         isTalking = true;
         //switch camera to telescope camera
         cutsceneCam.Priority = 20;
@@ -78,12 +90,14 @@ public class ResidentBehaviour : MonoBehaviour
     }
     void StopTalking()
     {
-        StopCoroutine(myEnumerator);
+        // StopCoroutine(myEnumerator);
         anim.SetBool("yes", false);
         anim.SetBool("no", false);
         anim.SetBool("thankyou", false);
         anim.SetBool("celebrate", false);
         isTalking = false;
+        FindFirstObjectByType<DialogueManager>().EndDialogue();
+
         //switch camera to telescope camera
         playerCapsule.SetActive(true);
 

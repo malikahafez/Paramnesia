@@ -25,4 +25,5 @@ public class Dialogue
 {
     public string name;
     public DialogueLine[] lines; 
+    public Animator characterAnimator;
 }

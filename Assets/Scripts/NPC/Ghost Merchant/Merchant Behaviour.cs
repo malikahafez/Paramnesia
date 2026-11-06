@@ -21,7 +21,7 @@ public class MerchantBehaviour : MonoBehaviour
 
     [Header("Dialogue Manager")]
     [SerializeField] private DialogueTrigger dialogueTrigger;
-    [SerializeField] private DialogueManager dialogueManager;
+    // [SerializeField] private DialogueManager dialogueManager;
     // [Header("UI Overlay")]
     // [SerializeField] private GameObject dialogUI;
     // [SerializeField] private GameObject mainUI;
@@ -59,7 +59,7 @@ public class MerchantBehaviour : MonoBehaviour
             StopTalking();
             Debug.Log("after disable talking " + isTalking);
         }
-        else if (isTalking && dialogueManager.conversationEnded)
+        else if (isTalking && FindFirstObjectByType<DialogueManager>().conversationEnded)
         {
             Debug.Log("conversation ended");
             Debug.Log("talking mode " + isTalking);
@@ -94,7 +94,7 @@ public class MerchantBehaviour : MonoBehaviour
         anim.SetBool("thankyou", false);
         anim.SetBool("celebrate", false);
         isTalking = false;
-        dialogueManager.EndDialogue();
+        FindFirstObjectByType<DialogueManager>().EndDialogue();
 
         //switch camera to telescope camera
         playerCapsule.SetActive(true);
