@@ -21,6 +21,12 @@ public class MerchantBehaviour : MonoBehaviour
 
     [Header("Dialogue Manager")]
     [SerializeField] private DialogueTrigger dialogueTrigger;
+
+    [Header("UI Prompt")]
+    [SerializeField] private GameObject promptUI;
+    // private bool playerInRange = false;
+
+
     // [SerializeField] private DialogueManager dialogueManager;
     // [Header("UI Overlay")]
     // [SerializeField] private GameObject dialogUI;
@@ -29,6 +35,7 @@ public class MerchantBehaviour : MonoBehaviour
     void Start()
     {
         myEnumerator = MySequence();
+        if (promptUI != null) promptUI.SetActive(false);
 
     }
 
@@ -40,6 +47,12 @@ public class MerchantBehaviour : MonoBehaviour
         if (cast && !isTalking)
         {
             // Debug.Log("raycast hit " + isTalking);
+            if (raycasthit.collider.CompareTag("merchant"))
+            {
+                Debug.Log("cast from merchant");
+                // playerInRange = true;
+                if (promptUI != null) promptUI.SetActive(true);
+            }
             if (raycasthit.collider.CompareTag("merchant") && Input.GetKeyDown(KeyCode.E))
             // if (raycasthit.collider.CompareTag("merchant") && interactAction != null)
 
@@ -66,10 +79,18 @@ public class MerchantBehaviour : MonoBehaviour
             StopTalking();
             Debug.Log("after disable talking " + isTalking);
         }
+        else
+        {
+            // playerInRange = false;
+            if (promptUI != null) promptUI.SetActive(false);
+
+        }
 
     }
     void Talk()
     {
+        if (promptUI != null) promptUI.SetActive(false);
+
         dialogueTrigger.TriggerDialogue();
         // StartCoroutine(myEnumerator);
         isTalking = true;
@@ -88,6 +109,8 @@ public class MerchantBehaviour : MonoBehaviour
     }
     void StopTalking()
     {
+        if (promptUI != null) promptUI.SetActive(false);
+
         // StopCoroutine(myEnumerator);
         anim.SetBool("yes", false);
         anim.SetBool("no", false);
