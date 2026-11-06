@@ -648,9 +648,13 @@ namespace StealthGame.Player
 
         private static bool WasDashPressed()
         {
-            if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.E)) return true;
+            // if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.E)) return true;
+            if (Input.GetKeyDown(KeyCode.LeftAlt)) return true;
+
 #if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null && (Keyboard.current.leftAltKey.wasPressedThisFrame || Keyboard.current.eKey.wasPressedThisFrame))
+            // if (Keyboard.current != null && (Keyboard.current.leftAltKey.wasPressedThisFrame || Keyboard.current.eKey.wasPressedThisFrame))
+            if (Keyboard.current != null && (Keyboard.current.leftAltKey.wasPressedThisFrame))
+
                 return true;
 #endif
             return false;
