@@ -21775,9 +21775,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1542233070718254344, guid: 4d8df784cf8c3a24394ece337e943bd4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1019264846}
-    - targetCorrespondingSourceObject: {fileID: 1542233070718254344, guid: 4d8df784cf8c3a24394ece337e943bd4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1019264845}
     - targetCorrespondingSourceObject: {fileID: 4950491532966040965, guid: 4d8df784cf8c3a24394ece337e943bd4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1019264849}
@@ -21795,22 +21792,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1542233070718254344, guid: 4d8df784cf8c3a24394ece337e943bd4, type: 3}
   m_PrefabInstance: {fileID: 1019264842}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1019264845
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1019264844}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6db54bb66f71c4ff3a942ead1eb8c82d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoomDoorTransition
-  targetSceneName: Kitchen_Scene
-  doorAnimator: {fileID: 0}
-  delayBeforeLoading: 1
-  promptUI: {fileID: 561104125}
 --- !u!65 &1019264846
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -10995,9 +10995,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1842708414955614, guid: 141a3c088bae48f42a579375904a411c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1690352244}
-    - targetCorrespondingSourceObject: {fileID: 1842708414955614, guid: 141a3c088bae48f42a579375904a411c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1690352243}
   m_SourcePrefab: {fileID: 100100000, guid: 141a3c088bae48f42a579375904a411c, type: 3}
 --- !u!1 &531934944
 GameObject:
@@ -35642,22 +35639,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1842708414955614, guid: 141a3c088bae48f42a579375904a411c, type: 3}
   m_PrefabInstance: {fileID: 529716147}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1690352243
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1690352242}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6db54bb66f71c4ff3a942ead1eb8c82d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoomDoorTransition
-  targetSceneName: Level 1 Base
-  doorAnimator: {fileID: 0}
-  delayBeforeLoading: 1
-  promptUI: {fileID: 609585149}
 --- !u!65 &1690352244
 BoxCollider:
   m_ObjectHideFlags: 0
