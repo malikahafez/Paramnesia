@@ -17,3 +17,5 @@ MonoBehaviour:
     bone, ensuring every strike lands with maximum, lethal force.
   itemIcon: {fileID: -7538960467599387797, guid: 9944f0c0407484b9e91040cd276d3368, type: 3}
   itemPrefab: {fileID: 7516147023265018176, guid: 9122802f90381f84d8b8a93daaf9717a, type: 3}
+  collectibleType: 4
+  category: 1
