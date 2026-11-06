@@ -25,7 +25,7 @@ public class ResidentBehaviour : MonoBehaviour
 
     [Header("UI Prompt")]
     [SerializeField] private GameObject promptUI;
-    private bool playerInRange = false;
+    // private bool playerInRange = false;
     // [Header("UI Overlay")]
     // [SerializeField] private GameObject dialogUI;
     // [SerializeField] private GameObject mainUI;
@@ -50,7 +50,7 @@ public class ResidentBehaviour : MonoBehaviour
             if (raycasthit.collider.CompareTag("npc"))
             {
                 Debug.Log("cast from resident");
-                playerInRange = true;
+                // playerInRange = true;
                 if (promptUI != null) promptUI.SetActive(true);
             }
             if (raycasthit.collider.CompareTag("npc") && Input.GetKeyDown(KeyCode.E))
@@ -79,7 +79,7 @@ public class ResidentBehaviour : MonoBehaviour
         }
         else
         {
-            playerInRange = false;
+            // playerInRange = false;
             if (promptUI != null) promptUI.SetActive(false);
 
         }

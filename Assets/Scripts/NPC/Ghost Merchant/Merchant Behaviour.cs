@@ -24,7 +24,7 @@ public class MerchantBehaviour : MonoBehaviour
 
     [Header("UI Prompt")]
     [SerializeField] private GameObject promptUI;
-    private bool playerInRange = false;
+    // private bool playerInRange = false;
 
 
     // [SerializeField] private DialogueManager dialogueManager;
@@ -50,7 +50,7 @@ public class MerchantBehaviour : MonoBehaviour
             if (raycasthit.collider.CompareTag("merchant"))
             {
                 Debug.Log("cast from merchant");
-                playerInRange = true;
+                // playerInRange = true;
                 if (promptUI != null) promptUI.SetActive(true);
             }
             if (raycasthit.collider.CompareTag("merchant") && Input.GetKeyDown(KeyCode.E))
@@ -81,7 +81,7 @@ public class MerchantBehaviour : MonoBehaviour
         }
         else
         {
-            playerInRange = false;
+            // playerInRange = false;
             if (promptUI != null) promptUI.SetActive(false);
 
         }
