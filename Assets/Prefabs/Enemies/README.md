@@ -18,4 +18,10 @@ models retain their own required skinning skeleton and humanoid avatar.
 To hide placed zombies from gameplay, clear the checkbox beside their name at the
 top of the Inspector, then save the scene. The Hierarchy eye only hides Scene view.
 
+Enemy types: melee zombies drop a Bone, `Enemy_Zombie_BioHazardSuit_Male_01` throws
+bones and drops a Slime flask, `Enemy_Zombie_Brute_01` punches/swipes and drops a Heart.
+Rebuild them with Tools > Paramnesia > Set Up Enemy Types. One Brute and one hazmat are
+placed in Level 1 Base for testing. Enemies ragdoll on death (Enemy Combat Target >
+Ragdoll On Death).
+
 Full settings, navigation and test tools: [Zombie AI guide](../../../Docs/EnemyDetection.md).

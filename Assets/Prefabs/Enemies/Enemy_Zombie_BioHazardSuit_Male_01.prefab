@@ -286,6 +286,7 @@ MonoBehaviour:
   targetOffset: {x: 0, y: 1, z: 0}
   viewRange: 10
   viewAngle: 70
+  proximityRange: 1.25
   sightLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -315,9 +316,15 @@ MonoBehaviour:
   currentHealth: 100
   enableCounterAttack: 1
   chaseSpeed: 1.75
-  attackReach: 2.05
+  attackReach: 7
   attackCooldown: 2.2
   attackDamage: 18
+  attackWindups:
+  - 0.46874997
+  projectilePrefab: {fileID: 4253113042252880590, guid: cb85d1f476672804faa4a6bdbe8e37e1, type: 3}
+  projectileSpeed: 8.5
+  dropPrefab: {fileID: 7663370641544235219, guid: f57cfa45a61669e4aaca6e107c041edb, type: 3}
+  ragdollOnDeath: 1
   enemyDetection: {fileID: 7487074735431731813}
   enemyAnimator: {fileID: 3796610018903145243}
   enemyCollider: {fileID: 5888806560863750645}
@@ -334,7 +341,7 @@ NavMeshAgent:
   m_Speed: 0.85
   m_Acceleration: 10
   avoidancePriority: 50
-  m_AngularSpeed: 360
+  m_AngularSpeed: 200
   m_StoppingDistance: 0.15
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
@@ -361,6 +368,10 @@ MonoBehaviour:
   runSpeed: 3.041888
   idlePause: 2
   lostSightWait: 3
+  reactionTime: {x: 0.35, y: 0.7}
+  noticeState: 
+  noticeOffset: 0
+  noticeDuration: 2
 --- !u!1 &6136534439547079637
 GameObject:
   m_ObjectHideFlags: 0

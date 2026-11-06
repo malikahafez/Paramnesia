@@ -20,13 +20,13 @@ namespace StealthGame.Editor
         private const string AnimFolder = "Assets/Animations/Player";
         private const string SourceAnimFolder = "Assets/Animations/Player/Source";
         private const string ControllerPath = AnimFolder + "/PlayerCharacter.controller";
-        private const string SourceControllerPath = "Assets/Starter Assets/Runtime/ThirdPersonController/Character/Animations/StarterAssetsThirdPerson.controller";
+        private const string SourceControllerPath = "Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Animations/StarterAssetsThirdPerson.controller";
         private const string ZombieControllerPath = "Assets/Animations/Zombies/ZombieIdle.controller";
 
         // GanzSe Modular Character Prefab & Fallback
-        private const string GanzSePrefabPath = "Assets/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Update 1_1.prefab";
-        private const string GanzSeOriginalPrefabPath = "Assets/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Original 1_0.prefab";
-        private const string ArmatureModelPath = "Assets/Starter Assets/Runtime/ThirdPersonController/Character/Models/Armature.fbx";
+        private const string GanzSePrefabPath = "Assets/Prefabs/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Update 1_1.prefab";
+        private const string GanzSeOriginalPrefabPath = "Assets/Prefabs/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Original 1_0.prefab";
+        private const string ArmatureModelPath = "Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Models/Armature.fbx";
 
         // Kevin Iglesias Motion-Captured Humanoid Animation Paths
         private const string KiCombatIdle1HPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/1H/HumanM@CombatIdle1H01.fbx";
@@ -71,9 +71,9 @@ namespace StealthGame.Editor
         // Weapons (1 = Sword, 2 = Spear/Polearm, 3 = Battle Axe / Warhammer) & Off-Hand Shield
         private static readonly string[] WeaponPrefabPaths = new string[]
         {
-            "Assets/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Sword.prefab",
-            "Assets/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Spear.prefab",
-            "Assets/Dungon Pack/Prefabs/Axe.prefab"
+            "Assets/Prefabs/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Sword.prefab",
+            "Assets/Prefabs/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Spear.prefab",
+            "Assets/Prefabs/Dungon Pack/Prefabs/Axe.prefab"
         };
 
         private static readonly string[] FallbackWeaponPrefabPaths = new string[]
@@ -83,7 +83,7 @@ namespace StealthGame.Editor
             "Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Warhammer.prefab"
         };
 
-        private const string ShieldPrefabPath = "Assets/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Shield.prefab";
+        private const string ShieldPrefabPath = "Assets/Prefabs/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Shield.prefab";
         private const string FallbackShieldPrefabPath = "Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Shield.prefab";
 
         private static readonly string[] WeaponNames = new string[] { "Weapon_Sword", "Weapon_Spear", "Weapon_Axe" };
@@ -687,13 +687,13 @@ namespace StealthGame.Editor
             List<AudioClip> footsteps = new List<AudioClip>();
             for (int i = 1; i <= 10; i++)
             {
-                string clipPath = $"Assets/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Footstep_{i:00}.wav";
+                string clipPath = $"Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Footstep_{i:00}.wav";
                 var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(clipPath);
                 if (clip != null) footsteps.Add(clip);
             }
             pcc.footstepAudioClips = footsteps.ToArray();
             pcc.landingAudioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
-                "Assets/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Land.wav");
+                "Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Land.wav");
 
             pcc.ApplyCameraViewMode();
 
@@ -741,8 +741,8 @@ namespace StealthGame.Editor
                 meshObj.transform.localPosition = -b.center * scale;
             }
 
-            Material ironMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/BrokenVector/LowPolyDungeon/Materials/Metal_Iron.mat");
-            Material woodMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/BrokenVector/LowPolyDungeon/Materials/Wood_Polished.mat");
+            Material ironMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Metal_Iron.mat");
+            Material woodMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Wood_Polished.mat");
 
             foreach (var r in holder.GetComponentsInChildren<Renderer>(true))
             {
@@ -814,8 +814,8 @@ namespace StealthGame.Editor
             float[] targetWeaponLengths = new float[] { 0.88f, 1.25f, 0.78f }; // Sword, Spear, Axe length in meters
             float[] tipHeights = new float[] { 0.72f, 1.05f, 0.62f };
 
-            Material ironMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/BrokenVector/LowPolyDungeon/Materials/Metal_Iron.mat");
-            Material woodMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/BrokenVector/LowPolyDungeon/Materials/Wood_Polished.mat");
+            Material ironMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Metal_Iron.mat");
+            Material woodMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Wood_Polished.mat");
 
             for (int i = 0; i < 3; i++)
             {
