@@ -29,6 +29,8 @@ namespace StealthGame
         [Tooltip("When set, the attack throws this projectile instead of striking in melee.")]
         public GameObject projectilePrefab;
         public float projectileSpeed = 11f;
+        [Tooltip("A thrower holds fire while the player is closer than this, so it never lands point-blank melee-like hits.")]
+        public float minProjectileRange = 3f;
         [Tooltip("Collectible spawned on death.")]
         public GameObject dropPrefab;
         [Tooltip("Go limp and fall with the killing blow instead of playing the death animation.")]
@@ -73,14 +75,14 @@ namespace StealthGame
         private float _barHeight = 2.15f;
 
         public bool IsFlinching => _flinchTimer > 0.15f;
-        private ZombieAI _ai;
+        private ZombieBrain _ai;
         public bool IsStaggered => _staggerTimer > 0f;
         public bool IsWindingUpAttack => _isWindingUpAttack;
 
         private void Awake()
         {
             currentHealth = maxHealth;
-            _ai = GetComponent<ZombieAI>();
+            _ai = GetComponent<ZombieBrain>();
             if (enemyDetection == null) enemyDetection = GetComponent<EnemyDetection>();
             if (enemyAnimator == null) enemyAnimator = GetComponentInChildren<Animator>();
             if (enemyCollider == null) enemyCollider = GetComponent<Collider>();
@@ -280,7 +282,7 @@ namespace StealthGame
                 UpdateCombatBehavior();
             }
 
-            // A wind-up cut short (hit, parry, death, lost sight) discards the bone still in hand.
+            // A wind-up cut short (hit, parry, death, lost sight) discards the projectile still in hand.
             if (_heldProjectile != null && !_isWindingUpAttack)
             {
                 Destroy(_heldProjectile.gameObject);
@@ -317,7 +319,8 @@ namespace StealthGame
                 return;
             }
 
-            if (dist > 0.05f && (_ai == null || dist <= attackReach))
+            bool retreating = _ai is RangedZombieAI ranged && ranged.IsRetreating; // its AI steers it away; don't turn it back round
+            if (dist > 0.05f && (_ai == null || (dist <= attackReach && !retreating)))
             {
                 Quaternion targetRot = Quaternion.LookRotation(toPlayer.normalized);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 7f);
@@ -331,11 +334,14 @@ namespace StealthGame
                     _isWindingUpAttack = false;
                     _attackCooldownTimer = attackCooldown;
 
+                    // Player closed in during the wind-up: no throw; Update discards the ball still in hand.
                     if (projectilePrefab != null)
                     {
-                        if (_heldProjectile != null)
+                        if (_heldProjectile != null && dist >= minProjectileRange)
+                        {
                             _heldProjectile.Launch(this, attackDamage, playerTransform.position + Vector3.up * 1.1f, projectileSpeed);
-                        _heldProjectile = null;
+                            _heldProjectile = null;
+                        }
                     }
                     else if (dist <= attackReach + 0.55f)
                     {
@@ -358,7 +364,7 @@ namespace StealthGame
             else
             {
                 _walkCycle = Mathf.MoveTowards(_walkCycle, 0f, Time.deltaTime * 5f);
-                if (_attackCooldownTimer <= 0f)
+                if (_attackCooldownTimer <= 0f && (projectilePrefab == null || (dist >= minProjectileRange && !retreating)))
                 {
                     _isWindingUpAttack = true;
                     int attack = Random.Range(0, attackWindups.Length);
@@ -371,7 +377,7 @@ namespace StealthGame
                     }
                     if (projectilePrefab != null)
                     {
-                        // The bone rides in the throwing hand through the wind-up and leaves it on the release frame.
+                        // The slime ball rides in the throwing hand through the wind-up and leaves it on the release frame.
                         Transform hand = enemyAnimator != null && enemyAnimator.isHuman ? enemyAnimator.GetBoneTransform(HumanBodyBones.RightHand) : null;
                         Vector3 origin = hand != null ? hand.position : transform.position + Vector3.up * 1.4f;
                         _heldProjectile = Instantiate(projectilePrefab, origin, Quaternion.identity).GetComponent<EnemyProjectile>();

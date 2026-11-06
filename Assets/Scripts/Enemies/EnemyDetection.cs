@@ -27,6 +27,8 @@ namespace StealthGame
         public UnityEvent onPlayerDetected = new UnityEvent();
         public UnityEvent onPlayerLost = new UnityEvent();
         public bool IsPlayerDetected { get; private set; }
+        /// <summary>Set by an AI still fighting a player it can't currently see (e.g. backing off with its back turned) to keep the alert indicator up.</summary>
+        public bool HoldAlert { get; set; }
         readonly RaycastHit[] sightHits = new RaycastHit[32];
         float nextSightCheck, alertTime;
         Vector3 indicatorScale;
@@ -44,10 +46,11 @@ namespace StealthGame
             }
 
             bool detected = CanSeePlayer();
+            bool alert = detected || HoldAlert;
+            if (detectionIndicator != null && detectionIndicator.activeSelf != alert) detectionIndicator.SetActive(alert);
             if (detected == IsPlayerDetected) return;
             IsPlayerDetected = detected;
             if (detected) alertTime = Time.time;
-            if (detectionIndicator != null) detectionIndicator.SetActive(detected);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (logDetectionChanges)
                 Debug.Log($"[{name}] Player {(detected ? "detected" : "lost")}", this);

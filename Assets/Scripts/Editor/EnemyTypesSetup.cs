@@ -8,14 +8,15 @@ using UnityEngine.AI;
 namespace StealthGame.Editor
 {
     /// <summary>
-    /// Enemy types and their drops: melee zombies drop a Bone, the hazmat (toxic waste) zombie throws
-    /// bones and drops a Slime flask, the Brute (tank) drops a Heart.
+    /// Enemy types and their drops: melee zombies drop a Bone, the hazmat (toxic waste) zombie only throws
+    /// slime balls and drops a Slime flask, the Brute (tank) drops a Heart.
     /// </summary>
     public static class EnemyTypesSetup
     {
         const string Enemies = "Assets/Prefabs/Enemies";
         const string Collectibles = "Assets/Collectibles/Prefabs/";
-        const string ProjectilePath = Enemies + "/Projectile_Bone.prefab";
+        const string ProjectilePath = Enemies + "/Projectile_Slime.prefab";
+        const string SlimeMaterial = Enemies + "/Projectile_Slime.mat";
         const string BrutePrefab = Enemies + "/Enemy_Zombie_Brute_01.prefab";
         const string BruteModel = "Assets/Prefabs/PolygonBossZombies/Prefabs/SM_Chr_ZombieBoss_Brute_01.prefab";
         const string CreaturePack = "Assets/Animations/Zombies/Creature Pack";
@@ -54,11 +55,14 @@ namespace StealthGame.Editor
             Check();
         }
 
+        /// <summary>The hazmat zombie is the thrower: RangedZombieAI and a slime projectile instead of melee.</summary>
+        public static bool IsRanged(string name) => name.Contains("BioHazardSuit");
+
         /// <summary>Called from ZombieAISetup.Configure so regenerating prefabs keeps their type.</summary>
         public static void ApplyType(string name, EnemyCombatTarget combat, NavMeshAgent agent)
         {
             combat.projectilePrefab = null;
-            var ai = combat.GetComponent<ZombieAI>();
+            var ai = combat.GetComponent<ZombieBrain>();
             ai.noticeState = "";
             if (name.Contains("Brute"))
             {
@@ -77,7 +81,7 @@ namespace StealthGame.Editor
                 // Eyes sit ~2.6 m up, so a player in reach falls below the vision cone without a wider close-range bypass.
                 combat.enemyDetection.proximityRange = 3f;
             }
-            else if (name.Contains("BioHazardSuit"))
+            else if (IsRanged(name))
             {
                 combat.dropPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Collectibles + "Collectible_Slime.prefab");
                 combat.projectilePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ProjectilePath);
@@ -167,20 +171,40 @@ namespace StealthGame.Editor
 
         static void BuildProjectile()
         {
-            var root = new GameObject("Projectile_Bone");
+            var root = new GameObject("Projectile_Slime");
             try
             {
-                var visual = (GameObject)PrefabUtility.InstantiatePrefab(
-                    AssetDatabase.LoadAssetAtPath<GameObject>(Collectibles + "Models/Bone.prefab"), root.transform);
-                PrefabUtility.UnpackPrefabInstance(visual, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
-                foreach (var behaviour in visual.GetComponentsInChildren<MonoBehaviour>(true)) UnityEngine.Object.DestroyImmediate(behaviour);
-                foreach (var collider in visual.GetComponentsInChildren<Collider>(true)) UnityEngine.Object.DestroyImmediate(collider);
-                foreach (var particles in visual.GetComponentsInChildren<ParticleSystem>(true))
-                    if (particles != null && particles.gameObject != visual) UnityEngine.Object.DestroyImmediate(particles.gameObject);
-                var mesh = visual.GetComponentInChildren<MeshRenderer>();
-                if (mesh == null) throw new InvalidOperationException("Bone model lost its mesh.");
-                // Bone.prefab is saved at a world position; center the mesh on the projectile's hitbox and trail.
-                visual.transform.localPosition -= mesh.bounds.center;
+                // Glossy, faintly glowing toxic-green goo; created once so hand tweaks to the material survive reruns.
+                var slime = AssetDatabase.LoadAssetAtPath<Material>(SlimeMaterial);
+                if (slime == null)
+                {
+                    slime = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                    // Deep green so the wet highlights and the glow around it carry the look, not a flat toy green.
+                    slime.SetColor("_BaseColor", new Color(0.16f, 0.45f, 0.05f));
+                    slime.SetFloat("_Smoothness", 0.95f);
+                    slime.EnableKeyword("_EMISSION");
+                    slime.SetColor("_EmissionColor", new Color(0.1f, 0.35f, 0.02f));
+                    AssetDatabase.CreateAsset(slime, SlimeMaterial);
+                }
+                Transform Blob(string name, Transform parent, Vector3 position, float size)
+                {
+                    var blob = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    blob.name = name;
+                    UnityEngine.Object.DestroyImmediate(blob.GetComponent<Collider>());
+                    blob.transform.SetParent(parent, false);
+                    blob.transform.localPosition = position;
+                    blob.transform.localScale = Vector3.one * size;
+                    blob.GetComponent<MeshRenderer>().sharedMaterial = slime;
+                    return blob.transform;
+                }
+                // A lumpy teardrop of goo: lumps trail behind the main glob (EnemyProjectile turns it to face its flight path).
+                // Lump positions and sizes are in the glob's units, 1 = its 0.26 m diameter.
+                var goo = Blob("Slime Ball", root.transform, Vector3.zero, 0.26f);
+                // Tightly overlapped so the silhouette reads as one tapering glob, not a string of beads.
+                Blob("Lump", goo, new Vector3(0.04f, 0.05f, -0.3f), 0.8f);
+                Blob("Tail", goo, new Vector3(-0.02f, 0.03f, -0.56f), 0.52f);
+                Blob("Tip", goo, new Vector3(-0.05f, 0.04f, -0.76f), 0.28f);
+                Blob("Bulge", goo, new Vector3(0.2f, -0.1f, -0.12f), 0.6f);
                 var body = root.AddComponent<Rigidbody>();
                 body.interpolation = RigidbodyInterpolation.Interpolate;
                 body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
@@ -194,9 +218,9 @@ namespace StealthGame.Editor
                 var trail = new GameObject("Trail").AddComponent<TrailRenderer>();
                 trail.transform.SetParent(root.transform, false);
                 trail.sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(TrailMaterial);
-                trail.time = 0.25f;
+                trail.time = 0.35f;
                 trail.minVertexDistance = 0.04f;
-                trail.widthMultiplier = 0.16f;
+                trail.widthMultiplier = 0.22f; // about the ball's width, tapering to nothing
                 trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
                 trail.colorGradient = new Gradient
                 {
@@ -206,7 +230,73 @@ namespace StealthGame.Editor
                 trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 trail.receiveShadows = false;
                 trail.emitting = false;
-                root.AddComponent<EnemyProjectile>().trail = trail;
+
+                var toxic = new Color(0.45f, 1f, 0.2f);
+                // Glows in hand and in flight, washing nearby walls green as it passes.
+                var light = root.AddComponent<Light>();
+                light.type = LightType.Point;
+                light.color = toxic;
+                light.intensity = 1.5f;
+                light.range = 2.5f;
+                light.shadows = LightShadows.None;
+                var glow = DropEffectsSetup.Particles(root.transform, "Glow", toxic, 0.35f, 6f, 0.4f, 0.4f, 0.5f, 0.6f);
+                var glowMain = glow.main;
+                glowMain.simulationSpace = ParticleSystemSimulationSpace.Local;
+                glowMain.maxParticles = 4;
+
+                // Bubbles swelling and popping on the surface; local, so they ride along.
+                var bubbles = DropEffectsSetup.Particles(root.transform, "Surface Bubbles", new Color(0.8f, 1f, 0.5f), 1f, 30f, 0.25f, 0.5f, 0.02f, 0.05f);
+                var bubblesMain = bubbles.main;
+                bubblesMain.simulationSpace = ParticleSystemSimulationSpace.Local;
+                DropEffectsSetup.Sphere(bubbles, 0.13f);
+                var swell = bubbles.sizeOverLifetime;
+                swell.enabled = true;
+                swell.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.4f, 1f, 1.2f));
+
+                // In the trail: goo dripping off behind it (also from the hand during the wind-up) and a faint drifting toxic haze.
+                var drips = DropEffectsSetup.Particles(root.transform, "Goo Drips", toxic, 1f, 4f, 0.4f, 0.8f, 0.03f, 0.07f);
+                var dripsEmission = drips.emission;
+                dripsEmission.rateOverDistance = 30f;
+                var dripsMain = drips.main;
+                dripsMain.gravityModifier = 1f;
+                DropEffectsSetup.Sphere(drips, 0.1f);
+                var shrink = drips.sizeOverLifetime;
+                shrink.enabled = true;
+                shrink.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 1f, 1f, 0.3f));
+                var mist = DropEffectsSetup.Particles(root.transform, "Toxic Mist", new Color(0.35f, 0.8f, 0.15f), 0.25f, 0f, 0.6f, 1f, 0.2f, 0.35f);
+                var mistEmission = mist.emission;
+                mistEmission.rateOverDistance = 8f;
+                var spread = mist.sizeOverLifetime;
+                spread.enabled = true;
+                spread.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.6f, 1f, 1.6f));
+                DropEffectsSetup.Rise(mist, 0.05f, 0.2f);
+                DropEffectsSetup.Noise(mist, 0.2f);
+
+                // Splat where it lands: flung droplets and a puff of vapour. Every lifetime here stays under EnemyProjectile's 2 s cleanup.
+                var splat = DropEffectsSetup.Particles(root.transform, "Splat", toxic, 1f, 0f, 0.4f, 0.8f, 0.04f, 0.1f);
+                var splatMain = splat.main;
+                splatMain.loop = false;
+                splatMain.duration = 0.3f;
+                splatMain.playOnAwake = false;
+                splatMain.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 4f);
+                splatMain.gravityModifier = 1.2f;
+                splat.emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 28) });
+                DropEffectsSetup.Sphere(splat, 0.08f);
+                var vapour = DropEffectsSetup.Particles(splat.transform, "Vapour", new Color(0.4f, 0.9f, 0.2f), 0.4f, 0f, 0.5f, 0.8f, 0.4f, 0.6f);
+                var vapourMain = vapour.main;
+                vapourMain.loop = false;
+                vapourMain.duration = 0.3f;
+                vapourMain.playOnAwake = false;
+                vapour.emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 3) });
+                var billow = vapour.sizeOverLifetime;
+                billow.enabled = true;
+                billow.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.5f, 1f, 1.5f));
+
+                var projectile = root.AddComponent<EnemyProjectile>();
+                projectile.trail = trail;
+                projectile.goo = goo;
+                projectile.splat = splat;
+                projectile.spinSpeed = 0f; // goo stretches along its path instead of tumbling
                 PrefabUtility.SaveAsPrefabAsset(root, ProjectilePath);
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }
@@ -221,13 +311,17 @@ namespace StealthGame.Editor
                 var combat = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid)).GetComponent<EnemyCombatTarget>();
                 if (combat == null) continue;
                 string name = combat.name;
-                bool ranged = name.Contains("BioHazardSuit");
+                bool ranged = IsRanged(name);
+                if ((combat.GetComponent<ZombieBrain>() is RangedZombieAI) != ranged || combat.GetComponents<ZombieBrain>().Length != 1)
+                    throw new InvalidOperationException(name + (ranged ? " needs RangedZombieAI as its only AI." : " needs ZombieAI as its only AI."));
                 string drop = name.Contains("Brute") ? "Collectible_Heart" : ranged ? "Collectible_Slime" : "Collectible_Bone";
                 if (combat.dropPrefab == null || combat.dropPrefab.name != drop) throw new InvalidOperationException(name + " should drop " + drop + ".");
-                if ((combat.projectilePrefab != null) != ranged) throw new InvalidOperationException(name + ": only the hazmat zombie throws bones.");
+                if ((combat.projectilePrefab != null) != ranged) throw new InvalidOperationException(name + ": only the hazmat zombie throws slime.");
                 var projectile = ranged ? combat.projectilePrefab.GetComponent<EnemyProjectile>() : null;
-                if (ranged && (projectile == null || projectile.trail == null)) throw new InvalidOperationException("Projectile_Bone needs EnemyProjectile with a trail.");
-                if (ranged && projectile.GetComponentInChildren<MeshRenderer>().bounds.center.magnitude > 0.1f) throw new InvalidOperationException("Projectile_Bone mesh must sit on its hitbox.");
+                if (ranged && (projectile == null || projectile.trail == null || projectile.goo == null || projectile.splat == null))
+                    throw new InvalidOperationException("Projectile_Slime needs EnemyProjectile with a trail, goo and splat.");
+                if (ranged && projectile.GetComponentInChildren<MeshRenderer>().bounds.center.magnitude > 0.1f) throw new InvalidOperationException("Projectile_Slime mesh must sit on its hitbox.");
+                if (ranged && combat.minProjectileRange <= 2.6f) throw new InvalidOperationException(name + " must not throw inside melee range.");
                 if (combat.attackWindups.Length != (name.Contains("Brute") ? 2 : 1)) throw new InvalidOperationException(name + " needs one strike time per attack animation.");
                 count++;
             }
@@ -236,7 +330,7 @@ namespace StealthGame.Editor
             if (!(sm.defaultState.motion is BlendTree tree) || tree.children.Length != 17 ||
                 sm.anyStateTransitions.Count(t => t.conditions.Any(c => c.parameter == "AttackIndex")) != 2)
                 throw new InvalidOperationException("Brute controller needs its locomotion tree and 2 attack states.");
-            Debug.Log("Enemy types: " + count + " enemies checked (Bone / Slime / Heart drops, hazmat projectile, Brute attacks).");
+            Debug.Log("Enemy types: " + count + " enemies checked (Bone / Slime / Heart drops, hazmat slime ball, Brute attacks).");
         }
     }
 }
