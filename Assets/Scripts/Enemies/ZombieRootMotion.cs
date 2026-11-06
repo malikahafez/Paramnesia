@@ -6,12 +6,12 @@ namespace StealthGame
     public class ZombieRootMotion : MonoBehaviour
     {
         Animator animator;
-        ZombieAI ai;
+        ZombieBrain ai;
 
         void Awake()
         {
             animator = GetComponent<Animator>();
-            ai = GetComponentInParent<ZombieAI>();
+            ai = GetComponentInParent<ZombieBrain>();
         }
 
         void OnAnimatorMove()

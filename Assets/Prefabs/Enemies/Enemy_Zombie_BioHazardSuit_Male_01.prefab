@@ -194,7 +194,7 @@ GameObject:
   - component: {fileID: 7487074735431731813}
   - component: {fileID: 6721895014657236020}
   - component: {fileID: 3619385206662723833}
-  - component: {fileID: 6233616669311240973}
+  - component: {fileID: 2397093077316060996}
   m_Layer: 0
   m_Name: Enemy_Zombie_BioHazardSuit_Male_01
   m_TagString: Untagged
@@ -323,6 +323,7 @@ MonoBehaviour:
   - 0.46874997
   projectilePrefab: {fileID: 4253113042252880590, guid: cb85d1f476672804faa4a6bdbe8e37e1, type: 3}
   projectileSpeed: 8.5
+  minProjectileRange: 3
   dropPrefab: {fileID: 7663370641544235219, guid: f57cfa45a61669e4aaca6e107c041edb, type: 3}
   ragdollOnDeath: 1
   enemyDetection: {fileID: 7487074735431731813}
@@ -350,7 +351,7 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &6233616669311240973
+--- !u!114 &2397093077316060996
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -359,9 +360,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 6027417701591699575}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2167dbc4c72e7bc4a8ade69e0a773863, type: 3}
+  m_Script: {fileID: 11500000, guid: 307be6f8cc1fd4d40bc1cc6bd08ad5c0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.ZombieAI
+  m_EditorClassIdentifier: Assembly-CSharp::StealthGame.RangedZombieAI
   roamCenter: {fileID: 0}
   roamRadius: 4
   roamSpeed: 0.3330062
@@ -372,6 +373,9 @@ MonoBehaviour:
   noticeState: 
   noticeOffset: 0
   noticeDuration: 2
+  retreatSpeed: 1.6
+  retreatMargin: 1.5
+  trackingMemory: 2.5
 --- !u!1 &6136534439547079637
 GameObject:
   m_ObjectHideFlags: 0

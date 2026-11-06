@@ -114,7 +114,7 @@ namespace StealthGame.Editor
             finally { PrefabUtility.UnloadPrefabContents(root); }
         }
 
-        static ParticleSystem Particles(Transform parent, string name, Color color, float alpha, float rate,
+        internal static ParticleSystem Particles(Transform parent, string name, Color color, float alpha, float rate,
             float minLife, float maxLife, float minSize, float maxSize)
         {
             var go = new GameObject(name);
@@ -149,7 +149,7 @@ namespace StealthGame.Editor
             return ps;
         }
 
-        static void Sphere(ParticleSystem ps, float radius)
+        internal static void Sphere(ParticleSystem ps, float radius)
         {
             var shape = ps.shape;
             shape.enabled = true;
@@ -158,7 +158,7 @@ namespace StealthGame.Editor
             shape.radiusThickness = 0f; // emit from the surface
         }
 
-        static void Rise(ParticleSystem ps, float min, float max)
+        internal static void Rise(ParticleSystem ps, float min, float max)
         {
             var velocity = ps.velocityOverLifetime;
             velocity.enabled = true;
@@ -169,7 +169,7 @@ namespace StealthGame.Editor
             velocity.z = new ParticleSystem.MinMaxCurve(0f, 0f);
         }
 
-        static void Noise(ParticleSystem ps, float strength)
+        internal static void Noise(ParticleSystem ps, float strength)
         {
             var noise = ps.noise;
             noise.enabled = true;
