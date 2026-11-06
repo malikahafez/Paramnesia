@@ -170,8 +170,17 @@ namespace StealthGame.Editor
             // 200°/s turns read as a body swinging round rather than snapping.
             agent.radius = 0.3f; agent.height = 1.8f; agent.speed = 0.85f; agent.angularSpeed = 200f; agent.acceleration = 10f;
             agent.stoppingDistance = 0.15f;
-            if (root.GetComponent<ZombieAI>() == null) root.AddComponent<ZombieAI>();
-            var ai = root.GetComponent<ZombieAI>();
+            // Throwers get their own keep-your-distance AI; everyone else chases into claw range.
+            var brain = EnemyTypesSetup.IsRanged(root.name) ? typeof(RangedZombieAI) : typeof(ZombieAI);
+            var ai = root.GetComponent<ZombieBrain>();
+            if (ai != null && ai.GetType() != brain)
+            {
+                var replacement = (ZombieBrain)root.AddComponent(brain);
+                JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(ai), replacement); // keep the shared roam/notice tuning
+                UnityEngine.Object.DestroyImmediate(ai);
+                ai = replacement;
+            }
+            if (ai == null) ai = (ZombieBrain)root.AddComponent(brain);
             agent.updatePosition = false;
             combat.enemyDetection = root.GetComponent<EnemyDetection>();
             combat.enemyAnimator = root.GetComponentInChildren<Animator>(true);
@@ -190,7 +199,7 @@ namespace StealthGame.Editor
         [MenuItem("Tools/Paramnesia/Check Zombie AI Setup")]
         public static void Check()
         {
-            foreach (var ai in UnityEngine.Object.FindObjectsByType<ZombieAI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var ai in UnityEngine.Object.FindObjectsByType<ZombieBrain>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 var anim = ai.GetComponentInChildren<Animator>(true);
                 if (!anim.isHuman || !anim.avatar.isValid) throw new InvalidOperationException("Invalid zombie avatar");

@@ -233,6 +233,7 @@ MonoBehaviour:
   - 0.5
   projectilePrefab: {fileID: 0}
   projectileSpeed: 11
+  minProjectileRange: 3
   dropPrefab: {fileID: 2341778454195115720, guid: 01fce56c20d35a246a98403ce3be6f2b, type: 3}
   ragdollOnDeath: 1
   enemyDetection: {fileID: 1173515788205287203}

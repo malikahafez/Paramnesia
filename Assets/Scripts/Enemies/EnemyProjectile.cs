@@ -14,15 +14,35 @@ namespace StealthGame
         [Tooltip("End-over-end tumble in degrees per second.")]
         public float spinSpeed = 900f;
         public TrailRenderer trail;
+        [Tooltip("Optional mesh that jiggles and stretches along the flight path, like a glob of goo.")]
+        public Transform goo;
+        [Tooltip("Optional burst played where the projectile lands.")]
+        public ParticleSystem splat;
         EnemyCombatTarget owner;
         int damage;
         Rigidbody body;
         Collider hitCollider;
+        Vector3 gooScale;
+        float wobblePhase;
 
         void Awake()
         {
             body = GetComponent<Rigidbody>();
             hitCollider = GetComponent<Collider>();
+            if (goo != null) gooScale = goo.localScale;
+            wobblePhase = Random.value * 10f;
+        }
+
+        void Update()
+        {
+            if (goo == null) return;
+            Vector3 velocity = body.isKinematic ? Vector3.zero : body.linearVelocity;
+            if (velocity.sqrMagnitude > 0.01f) goo.rotation = Quaternion.LookRotation(velocity);
+            // Wet jiggle; the faster it flies the longer it stretches, thinning to keep roughly its volume.
+            float stretch = 1f + Mathf.Min(velocity.magnitude * 0.04f, 0.4f);
+            float jiggle = Mathf.Sin(Time.time * 14f + wobblePhase) * 0.1f;
+            float side = 1f / Mathf.Sqrt(stretch);
+            goo.localScale = Vector3.Scale(gooScale, new Vector3(side * (1f + jiggle), side * (1f - jiggle), stretch));
         }
 
         /// <summary>Carried by the hand: no physics, no hits, no trail.</summary>
@@ -58,10 +78,19 @@ namespace StealthGame
             if (player != null) player.OnEnemyAttackStrike(owner, damage);
             if (trail != null)
             {
-                // Leave the trail behind to fade out instead of vanishing with the bone.
+                // Leave the trail behind to fade out instead of vanishing with the projectile.
                 trail.transform.SetParent(null, true);
                 trail.emitting = false;
                 trail.autodestruct = true;
+            }
+            // Drips and mist drift on and fade too; the splat bursts where it landed.
+            foreach (var particles in GetComponentsInChildren<ParticleSystem>())
+            {
+                if (particles.transform.parent != transform) continue; // nested systems go with their parent
+                particles.transform.SetParent(null, true);
+                if (particles == splat) particles.Play();
+                else particles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                Destroy(particles.gameObject, 2f); // outlives every drip, puff and splat droplet set up for it
             }
             Destroy(gameObject);
         }
