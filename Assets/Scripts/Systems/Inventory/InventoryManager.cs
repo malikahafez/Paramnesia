@@ -7,7 +7,7 @@ public class InventoryManager : MonoBehaviour
 {
     [Header("Item Database")]
     [Tooltip("Drag all your MerchantItemData assets here (potions, bones, keys, slime).")]
-    [SerializeField] private List<ScriptableObject> allGameItems = new List<ScriptableObject>();
+   [SerializeField] private List<ScriptableObject> allGameItems = new List<ScriptableObject>();
 
     [Header("UI Panels & Setup")]
     [SerializeField] private GameObject inventoryCanvasPanel; // The main UI panel that toggles with 'I'
@@ -43,9 +43,9 @@ public class InventoryManager : MonoBehaviour
             inventoryCanvasPanel.SetActive(false);
         }
         if (detailsPanelGroup != null)
-        {
-            detailsPanelGroup.SetActive(false);
-        }
+    {
+        detailsPanelGroup.SetActive(false);
+    }
     }
 
     private void Start()
@@ -70,13 +70,9 @@ public class InventoryManager : MonoBehaviour
 
     private void Update()
     {
-        // Debug test to see if Update loop is running
-        // Debug.Log("Update is running");
-
         // Toggle inventory with 'I'
         if (Input.GetKeyDown(KeyCode.I))
         {
-            Debug.Log("Should open inventory");
             ToggleInventory();
         }
 
@@ -88,37 +84,37 @@ public class InventoryManager : MonoBehaviour
     }
 
     [Header("Camera Control (Optional)")]
-    [SerializeField] private MonoBehaviour cameraController; // Drag your MouseLook, CinemachineInputAxisDriver, or PlayerCamera script here
+[SerializeField] private MonoBehaviour cameraController; // Drag your MouseLook, CinemachineInputAxisDriver, or PlayerCamera script here
 
-    public void ToggleInventory()
+public void ToggleInventory()
+{
+    isOpen = !isOpen;
+
+    if (inventoryCanvasPanel != null)
     {
-        isOpen = !isOpen;
-
-        if (inventoryCanvasPanel != null)
-        {
-            inventoryCanvasPanel.SetActive(isOpen);
-        }
-
-        // Pause game scale and unlock cursor
-        Time.timeScale = isOpen ? 0f : 1f;
-        Cursor.lockState = isOpen ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = isOpen;
-
-        // Freeze / unfreeze camera script if assigned
-        if (cameraController != null)
-        {
-            cameraController.enabled = !isOpen;
-        }
-
-        if (isOpen)
-        {
-            RefreshGrid();
-        }
-        else
-        {
-            DeselectItem();
-        }
+        inventoryCanvasPanel.SetActive(isOpen);
     }
+
+    // Pause game scale and unlock cursor
+    Time.timeScale = isOpen ? 0f : 1f;
+    Cursor.lockState = isOpen ? CursorLockMode.None : CursorLockMode.Locked;
+    Cursor.visible = isOpen;
+
+    // Freeze / unfreeze camera script if assigned
+    if (cameraController != null)
+    {
+        cameraController.enabled = !isOpen;
+    }
+
+    if (isOpen)
+    {
+        RefreshGrid(); 
+    }
+    else
+    {
+        DeselectItem();
+    }
+}
 
     public void FilterCategory(ItemCategory category)
     {
@@ -141,157 +137,156 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    public void RefreshGrid()
+ public void RefreshGrid()
+{
+    if (gridContainer == null || slotPrefab == null) return;
+
+    foreach (Transform child in gridContainer)
     {
-        if (gridContainer == null || slotPrefab == null) return;
+        Destroy(child.gameObject);
+    }
 
-        foreach (Transform child in gridContainer)
+    int spawnedCount = 0;
+
+    foreach (ScriptableObject itemObj in allGameItems)
+    {
+        if (itemObj == null) continue;
+
+        int count = GetItemCount(itemObj);
+
+        if (count > 0)
         {
-            Destroy(child.gameObject);
-        }
+            ItemCategory itemCategory = GetItemCategory(itemObj);
+            bool matchesCategory = (currentCategory == ItemCategory.All) || (itemCategory == currentCategory);
 
-        int spawnedCount = 0;
-
-        foreach (ScriptableObject itemObj in allGameItems)
-        {
-            if (itemObj == null) continue;
-
-            int count = GetItemCount(itemObj);
-
-            if (count > 0)
+            if (matchesCategory)
             {
-                ItemCategory itemCategory = GetItemCategory(itemObj);
-                bool matchesCategory = (currentCategory == ItemCategory.All) || (itemCategory == currentCategory);
+                GameObject slotObj = Instantiate(slotPrefab, gridContainer);
+                InventorySlotUI slotUI = slotObj.GetComponent<InventorySlotUI>();
 
-                if (matchesCategory)
+                if (slotUI != null)
                 {
-                    GameObject slotObj = Instantiate(slotPrefab, gridContainer);
-                    InventorySlotUI slotUI = slotObj.GetComponent<InventorySlotUI>();
-
-                    if (slotUI != null)
-                    {
-                        CollectibleType itemType = GetCollectibleType(itemObj);
-                        slotUI.SetupGeneric(itemObj, itemType, count, this);
-                        spawnedCount++;
-                    }
+                    CollectibleType itemType = GetCollectibleType(itemObj);
+                    slotUI.SetupGeneric(itemObj, itemType, count, this);
+                    spawnedCount++;
                 }
             }
         }
-
-        Debug.Log($"[InventoryManager] Successfully rendered {spawnedCount} items into grid for category {currentCategory}.");
     }
-    private int GetItemCount(ScriptableObject item)
+
+    Debug.Log($"[InventoryManager] Successfully rendered {spawnedCount} items into grid for category {currentCategory}.");
+}
+private int GetItemCount(ScriptableObject item)
+{
+    if (item is MerchantItemData merchant)
+    {
+        // Reads owned quantity directly from MerchantItemData field/property
+        var field = merchant.GetType().GetField("quantity") ?? merchant.GetType().GetField("ownedCount") ?? merchant.GetType().GetField("count");
+        if (field != null) return (int)field.GetValue(merchant);
+
+        var prop = merchant.GetType().GetProperty("quantity") ?? merchant.GetType().GetProperty("ownedCount") ?? merchant.GetType().GetProperty("count");
+        if (prop != null) return (int)prop.GetValue(merchant);
+
+        return 1; // Default to 1 if bought merchant items don't track stack counts
+    }
+
+    if (PlayerInventory.Instance != null)
+    {
+        CollectibleType itemType = GetCollectibleType(item);
+        return PlayerInventory.Instance.GetCollectibleCount(itemType);
+    }
+
+    return 0;
+}
+
+private CollectibleType GetCollectibleType(ScriptableObject item)
+{
+    if (item is MerchantItemData merchant) return merchant.collectibleType;
+
+    var field = item.GetType().GetField("collectibleType", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+    if (field != null) return (CollectibleType)field.GetValue(item);
+
+    return default;
+}
+
+public void SelectGenericItem(ScriptableObject item, CollectibleType type, InventorySlotUI slot)
+{
+    if (selectedSlot != null) selectedSlot.SetSelected(false);
+    selectedSlot = slot;
+    if (selectedSlot != null) selectedSlot.SetSelected(true);
+
+    if (detailsPanelGroup) detailsPanelGroup.SetActive(true);
+
+    string itemName = type.ToString();
+    string itemDescription = $"Collected world item: {type}";
+
+    if (item != null)
     {
         if (item is MerchantItemData merchant)
         {
-            // Reads owned quantity directly from MerchantItemData field/property
-            var field = merchant.GetType().GetField("quantity") ?? merchant.GetType().GetField("ownedCount") ?? merchant.GetType().GetField("count");
-            if (field != null) return (int)field.GetValue(merchant);
-
-            var prop = merchant.GetType().GetProperty("quantity") ?? merchant.GetType().GetProperty("ownedCount") ?? merchant.GetType().GetProperty("count");
-            if (prop != null) return (int)prop.GetValue(merchant);
-
-            return 1; // Default to 1 if bought merchant items don't track stack counts
+            itemName = !string.IsNullOrEmpty(merchant.itemName) ? merchant.itemName : merchant.name;
+            itemDescription = merchant.itemDescription;
         }
-
-        if (PlayerInventory.Instance != null)
+        else
         {
-            CollectibleType itemType = GetCollectibleType(item);
-            return PlayerInventory.Instance.GetCollectibleCount(itemType);
-        }
+            // Reflection fallback for custom world items if they have custom name/description fields
+            var nameField = item.GetType().GetField("itemName") ?? item.GetType().GetField("name");
+            if (nameField != null && nameField.GetValue(item) is string n && !string.IsNullOrEmpty(n)) 
+                itemName = n;
+            else 
+                itemName = item.name;
 
-        return 0;
+            var descField = item.GetType().GetField("itemDescription") ?? item.GetType().GetField("description");
+            if (descField != null && descField.GetValue(item) is string d && !string.IsNullOrEmpty(d))
+            {
+                itemDescription = d;
+            }
+        }
     }
 
-    private CollectibleType GetCollectibleType(ScriptableObject item)
+    if (detailItemName) detailItemName.text = itemName;
+    if (detailItemDescription) detailItemDescription.text = itemDescription;
+
+    // Extract and display sprite icon in details panel
+    if (detailItemImage != null && item != null)
     {
-        if (item is MerchantItemData merchant) return merchant.collectibleType;
+        Sprite sprite = null;
+        if (item is MerchantItemData merchant)
+        {
+            sprite = merchant.itemIcon;
+        }
+        else
+        {
+            var field = item.GetType().GetField("itemIcon") ?? item.GetType().GetField("icon") ?? item.GetType().GetField("sprite");
+            if (field != null) sprite = field.GetValue(item) as Sprite;
+        }
 
-        var field = item.GetType().GetField("collectibleType", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-        if (field != null) return (CollectibleType)field.GetValue(item);
-
-        return default;
+        if (sprite != null)
+        {
+            detailItemImage.gameObject.SetActive(true);
+            detailItemImage.sprite = sprite;
+        }
+        else
+        {
+            detailItemImage.gameObject.SetActive(false);
+        }
     }
 
-    public void SelectGenericItem(ScriptableObject item, CollectibleType type, InventorySlotUI slot)
+    int count = PlayerInventory.Instance != null ? PlayerInventory.Instance.GetCollectibleCount(type) : 0;
+    if (detailItemCount) detailItemCount.text = $"Owned: {count}";
+}
+private ItemCategory GetItemCategory(ScriptableObject item)
+{
+    if (item == null) return ItemCategory.All;
+
+    if (item is MerchantItemData merchantItem)
     {
-        if (selectedSlot != null) selectedSlot.SetSelected(false);
-        selectedSlot = slot;
-        if (selectedSlot != null) selectedSlot.SetSelected(true);
-
-        if (detailsPanelGroup) detailsPanelGroup.SetActive(true);
-
-        string itemName = type.ToString();
-        string itemDescription = $"Collected world item: {type}";
-
-        if (item != null)
-        {
-            if (item is MerchantItemData merchant)
-            {
-                itemName = !string.IsNullOrEmpty(merchant.itemName) ? merchant.itemName : merchant.name;
-                itemDescription = merchant.itemDescription;
-            }
-            else
-            {
-                // Reflection fallback for custom world items if they have custom name/description fields
-                var nameField = item.GetType().GetField("itemName") ?? item.GetType().GetField("name");
-                if (nameField != null && nameField.GetValue(item) is string n && !string.IsNullOrEmpty(n))
-                    itemName = n;
-                else
-                    itemName = item.name;
-
-                var descField = item.GetType().GetField("itemDescription") ?? item.GetType().GetField("description");
-                if (descField != null && descField.GetValue(item) is string d && !string.IsNullOrEmpty(d))
-                {
-                    itemDescription = d;
-                }
-            }
-        }
-
-        if (detailItemName) detailItemName.text = itemName;
-        if (detailItemDescription) detailItemDescription.text = itemDescription;
-
-        // Extract and display sprite icon in details panel
-        if (detailItemImage != null && item != null)
-        {
-            Sprite sprite = null;
-            if (item is MerchantItemData merchant)
-            {
-                sprite = merchant.itemIcon;
-            }
-            else
-            {
-                var field = item.GetType().GetField("itemIcon") ?? item.GetType().GetField("icon") ?? item.GetType().GetField("sprite");
-                if (field != null) sprite = field.GetValue(item) as Sprite;
-            }
-
-            if (sprite != null)
-            {
-                detailItemImage.gameObject.SetActive(true);
-                detailItemImage.sprite = sprite;
-            }
-            else
-            {
-                detailItemImage.gameObject.SetActive(false);
-            }
-        }
-
-        int count = PlayerInventory.Instance != null ? PlayerInventory.Instance.GetCollectibleCount(type) : 0;
-        if (detailItemCount) detailItemCount.text = $"Owned: {count}";
+        return merchantItem.category;
     }
-    private ItemCategory GetItemCategory(ScriptableObject item)
-    {
-        if (item == null) return ItemCategory.All;
 
-        if (item is MerchantItemData merchantItem)
-        {
-            return merchantItem.category;
-        }
-
-        // Default world collectibles to Dropping if unspecified
-        return ItemCategory.Dropping;
-    }
-    public void SelectItem(MerchantItemData item, InventorySlotUI slot)
+    // Default world collectibles to Dropping if unspecified
+    return ItemCategory.Dropping;
+}    public void SelectItem(MerchantItemData item, InventorySlotUI slot)
     {
         if (selectedSlot != null) selectedSlot.SetSelected(false);
         selectedItem = item;
@@ -300,22 +295,22 @@ public class InventoryManager : MonoBehaviour
         UpdateDetailsPanel();
     }
     public void FilterAll()
-    {
-        currentCategory = ItemCategory.All;
-        RefreshGrid();
-    }
+{
+    currentCategory = ItemCategory.All;
+    RefreshGrid();
+}
 
-    public void FilterPotions()
-    {
-        currentCategory = ItemCategory.Potion;
-        RefreshGrid();
-    }
+public void FilterPotions()
+{
+    currentCategory = ItemCategory.Potion;
+    RefreshGrid();
+}
 
-    public void FilterDroppings()
-    {
-        currentCategory = ItemCategory.Dropping;
-        RefreshGrid();
-    }
+public void FilterDroppings()
+{
+    currentCategory = ItemCategory.Dropping;
+    RefreshGrid();
+}
 
     private void DeselectItem()
     {
