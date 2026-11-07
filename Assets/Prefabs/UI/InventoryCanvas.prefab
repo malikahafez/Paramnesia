@@ -513,7 +513,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3275883711367171021}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InventoryManager, Assembly-CSharp
         m_MethodName: FilterDroppings
         m_Mode: 1
@@ -1273,7 +1273,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3275883711367171021}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InventoryManager, Assembly-CSharp
         m_MethodName: FilterPotions
         m_Mode: 1
@@ -1751,7 +1751,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1982687490945952532}
   m_HandleRect: {fileID: 5149669273880372388}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2141,7 +2141,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3275883711367171021}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InventoryManager, Assembly-CSharp
         m_MethodName: FilterAll
         m_Mode: 1
@@ -2301,7 +2301,6 @@ GameObject:
   - component: {fileID: 8770371086323247583}
   - component: {fileID: 7947221301861220699}
   - component: {fileID: 3877756095168438379}
-  - component: {fileID: 3275883711367171021}
   m_Layer: 5
   m_Name: InventoryCanvas
   m_TagString: Untagged
@@ -2392,39 +2391,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &3275883711367171021
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8818501436302425340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c74c360934b08448e803bc159a49c7cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
-  allGameItems:
-  - {fileID: 11400000, guid: 705b5e9825b764d0ca390735ba484277, type: 2}
-  - {fileID: 11400000, guid: 1878c043b02c14afcb7651ecfa5cfd9a, type: 2}
-  - {fileID: 11400000, guid: f013093adfdf34695b9d4077653aac72, type: 2}
-  - {fileID: 11400000, guid: 55af9716daeeb44dca210d413704b53f, type: 2}
-  - {fileID: 11400000, guid: 01582c64badd64ce6bca20a006942922, type: 2}
-  - {fileID: 11400000, guid: 885e350b08a154efbbe69dc4d5e9d6e6, type: 2}
-  - {fileID: 11400000, guid: de08f55db532f4d2a918ae5fa270a8d1, type: 2}
-  - {fileID: 11400000, guid: 01860c65a799f49adb0ad1a21d159314, type: 2}
-  inventoryCanvasPanel: {fileID: 4328689954779183813}
-  gridContainer: {fileID: 4573330551374550076}
-  slotPrefab: {fileID: 9098439062251558283, guid: af1cf0931cc7149418f65a5fc4924e37, type: 3}
-  detailItemImage: {fileID: 197414266608280677}
-  detailItemName: {fileID: 4519059598266700242}
-  detailItemDescription: {fileID: 6535015153089334035}
-  detailItemCount: {fileID: 1770911240338551928}
-  detailsPanelGroup: {fileID: 9186295624055975453}
-  allTabButton: {fileID: 7517601038896326755}
-  potionsTabButton: {fileID: 807644001367318347}
-  droppingsTabButton: {fileID: 6748938316812897379}
-  cameraController: {fileID: 0}
 --- !u!1 &9004275981123167740
 GameObject:
   m_ObjectHideFlags: 0
