@@ -56,7 +56,7 @@ public class InventoryManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[InventoryManager] PlayerInventory.Instance is NULL! Make sure PlayerInventory exists in the scene.");
+            Debug.LogError("[InventoryManager] PlayerInventory.Instance is NULL! Make sure PlayerInventory exists in the scene.");            Debug.LogError("[InventoryManager] PlayerInventory.Instance is NULL! Make sure PlayerInventory exists in the scene.");
         }
     }
 
@@ -174,7 +174,7 @@ public void ToggleInventory()
         }
     }
 
-    Debug.Log($"[InventoryManager] Successfully rendered {spawnedCount} items into grid for category {currentCategory}.");
+    Debug.Log($"[InventoryManager] Successfully rendered {spawnedCount} items into grid for category {currentCategory}.");    Debug.Log($"[InventoryManager] Successfully rendered {spawnedCount} items into grid for category {currentCategory}.");
 }
 private int GetItemCount(ScriptableObject item)
 {
