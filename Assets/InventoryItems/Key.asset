@@ -16,5 +16,5 @@ MonoBehaviour:
   collectibleType: 3
   category: 2
   description: 
-  icon: {fileID: 5769782505896413508, guid: 23b36aa80a6423d4f8350a61d0d6d569, type: 3}
+  icon: {fileID: -3245532158557515949, guid: c9a123fbf1354184992fadc593590a51, type: 3}
   modelPrefab: {fileID: 4406603987012955977, guid: bd8ea20519f34794b9da21b6c6c2e446, type: 3}

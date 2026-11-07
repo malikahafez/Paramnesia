@@ -1983,7 +1983,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6daa0dd9dc541da4f89cbcb0c7ab0522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
-  allGameItems: []
+  allGameItems:
+  - {fileID: 11400000, guid: 705b5e9825b764d0ca390735ba484277, type: 2}
+  - {fileID: 11400000, guid: d086b3868acac18439361ca8e7658610, type: 2}
+  - {fileID: 11400000, guid: 1878c043b02c14afcb7651ecfa5cfd9a, type: 2}
+  - {fileID: 11400000, guid: f013093adfdf34695b9d4077653aac72, type: 2}
+  - {fileID: 11400000, guid: cc459059060cea34ea77864b36368358, type: 2}
+  - {fileID: 11400000, guid: 55af9716daeeb44dca210d413704b53f, type: 2}
+  - {fileID: 11400000, guid: e5dcb6ad835f5db49aa5d2440bfb5cbe, type: 2}
+  - {fileID: 11400000, guid: b45485b4c0369b141a01fda03870ccdd, type: 2}
   inventoryCanvasPanel: {fileID: 847198165}
   gridContainer: {fileID: 847198164}
   slotPrefab: {fileID: 814199331}

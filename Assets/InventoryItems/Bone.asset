@@ -16,5 +16,5 @@ MonoBehaviour:
   collectibleType: 0
   category: 2
   description: Dropped by melee zombies and can be used to trade with the merchant.
-  icon: {fileID: 10713307000235227, guid: 642df61f16a28c54fa583468dbdf662e, type: 3}
+  icon: {fileID: 10713307000235227, guid: 462cbf94be4ef1f45bb0365208049b33, type: 3}
   modelPrefab: {fileID: 2341778454195115720, guid: 01fce56c20d35a246a98403ce3be6f2b, type: 3}
