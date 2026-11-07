@@ -15,65 +15,58 @@ namespace StealthGame.Editor
     [InitializeOnLoad]
     public static class PlayerCharacterSetup
     {
-        public const int TargetSetupVersion = 7;
+        public const int TargetSetupVersion = 13;
 
         private const string AnimFolder = "Assets/Animations/Player";
         private const string SourceAnimFolder = "Assets/Animations/Player/Source";
         private const string ControllerPath = AnimFolder + "/PlayerCharacter.controller";
-        private const string SourceControllerPath = "Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Animations/StarterAssetsThirdPerson.controller";
+        private const string UpperBodyMaskPath = AnimFolder + "/PlayerUpperBody.mask";
+        private const string FpRightArmMeshAssetPath = "Assets/Prefabs/Player/PlayerFPRightArmMesh.asset";
+        private const string SourceControllerPath = "Assets/Starter Assets/Runtime/ThirdPersonController/Character/Animations/StarterAssetsThirdPerson.controller";
         private const string ZombieControllerPath = "Assets/Animations/Zombies/ZombieIdle.controller";
 
-        // GanzSe Modular Character Prefab & Fallback
-        private const string GanzSePrefabPath = "Assets/Prefabs/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Update 1_1.prefab";
-        private const string GanzSeOriginalPrefabPath = "Assets/Prefabs/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Original 1_0.prefab";
-        private const string ArmatureModelPath = "Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Models/Armature.fbx";
+        // Polygon Apocalypse Female Character Model & Rig
+        private const string PolygonCharactersModelPath = "Assets/PolygonApocalypse/Models/Characters.fbx";
+        private const string PolygonCoolFemalePrefabPath = "Assets/PolygonApocalypse/Prefabs/Characters/SM_Chr_Cool_Female_01.prefab";
+        private const string PolygonSoldierFemalePrefabPath = "Assets/PolygonApocalypse/Prefabs/Characters/SM_Chr_Soldier_Female_01.prefab";
+        private const string PolygonScoutFemalePrefabPath = "Assets/PolygonApocalypse/Prefabs/Characters/SM_Chr_Scout_Female_01.prefab";
 
-        // Kevin Iglesias Motion-Captured Humanoid Animation Paths
-        private const string KiCombatIdle1HPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/1H/HumanM@CombatIdle1H01.fbx";
-        private const string KiIdle01Path = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Idles/HumanM@Idle01.fbx";
+        // Mixamo Action Animation Paths in Assets/Animations/Player/Source/
+        private const string MixamoIdlePath = SourceAnimFolder + "/Breathing_Idle.fbx";
+        private const string MixamoWalkPath = SourceAnimFolder + "/Walking.fbx";
+        private const string MixamoRunPath = SourceAnimFolder + "/Running.fbx";
+        private const string MixamoJumpPath = SourceAnimFolder + "/Jumping.fbx";
+        private const string MixamoCrouchIdlePath = SourceAnimFolder + "/Crouch_Idle.fbx";
+        private const string MixamoCrouchWalkPath = SourceAnimFolder + "/Crouched_Walking.fbx";
+        private const string MixamoSwordAttackPath = SourceAnimFolder + "/Sword_And_Shield_Slash.fbx";
+        private const string MixamoSpearAttackPath = SourceAnimFolder + "/Standing_Melee_Attack_Horizontal.fbx";
+        private const string MixamoAxeAttackPath = SourceAnimFolder + "/Standing_Melee_Attack_Downward.fbx";
 
-        // 8-Direction Walk Clips
-        private const string KiWalkForwardPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_Forward.fbx";
-        private const string KiWalkBackwardPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_Backward.fbx";
-        private const string KiWalkLeftPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_Left.fbx";
-        private const string KiWalkRightPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_Right.fbx";
-        private const string KiWalkForwardLeftPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_ForwardLeft.fbx";
-        private const string KiWalkForwardRightPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_ForwardRight.fbx";
-        private const string KiWalkBackwardLeftPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_BackwardLeft.fbx";
-        private const string KiWalkBackwardRightPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_BackwardRight.fbx";
+        // Fallback Character Prefabs (Used until Polygon Apocalypse Woman is imported)
+        private const string GanzSePrefabPath = "Assets/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Update 1_1.prefab";
+        private const string GanzSeOriginalPrefabPath = "Assets/URP GanzSe Free Modular Character Pack/Prefabs/Modular Character/GanzSe Free Modular Character Original 1_0.prefab";
+        private const string ArmatureModelPath = "Assets/Starter Assets/Runtime/ThirdPersonController/Character/Models/Armature.fbx";
 
-        // 8-Direction Run & Sprint Clips
-        private const string KiRunForwardPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Forward.fbx";
-        private const string KiRunBackwardPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Backward.fbx";
-        private const string KiRunLeftPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Left.fbx";
-        private const string KiRunRightPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Right.fbx";
-        private const string KiRunForwardLeftPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_ForwardLeft.fbx";
-        private const string KiRunForwardRightPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_ForwardRight.fbx";
-        private const string KiRunBackwardLeftPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_BackwardLeft.fbx";
-        private const string KiRunBackwardRightPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_BackwardRight.fbx";
-        private const string KiSprintForwardPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Sprint/HumanM@Sprint01_Forward.fbx";
-
-        // Jump & Air Clips
-        private const string KiJumpBeginPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Jump/HumanM@Jump01 - Begin.fbx";
-        private const string KiFallPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Jump/HumanM@Fall01.fbx";
-        private const string KiJumpLandPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Jump/HumanM@Jump01 - Land.fbx";
-
-        // Combat, Shield Parry, Hit & Death Clips
-        private const string KiAttack1HRPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/1H/HumanM@Attack1H01_R.fbx";
-        private const string KiAttack1HLPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/1H/HumanM@Attack1H01_L.fbx";
-        private const string KiAttack2HPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/2H/HumanM@Attack2H01.fbx";
-        private const string KiAttackPolearmPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Polearm/HumanM@AttackPolearm01.fbx";
-        private const string KiAttackShieldPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/Shield/HumanM@AttackShield01.fbx";
-        private const string KiCombatDamagePath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/HumanM@CombatDamage01.fbx";
-        private const string KiDeathPath = "Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/HumanM@Death01.fbx";
+        // Fallback Kevin Iglesias Female Humanoid Clips
+        private const string KiFemaleIdlePath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Idles/HumanF@Idle01.fbx";
+        private const string KiFemaleWalkPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Walk/HumanF@Walk01_Forward.fbx";
+        private const string KiFemaleRunPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Run/HumanF@Run01_Forward.fbx";
+        private const string KiFemaleJumpBeginPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Jump/HumanF@Jump01 - Begin.fbx";
+        private const string KiFemaleFallPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Jump/HumanF@Fall01.fbx";
+        private const string KiFemaleJumpLandPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Movement/Jump/HumanF@Jump01 - Land.fbx";
+        private const string KiFemaleAttack1HPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/1H/HumanF@Attack1H01_R.fbx";
+        private const string KiFemaleAttackPolearmPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/Polearm/HumanF@AttackPolearm01.fbx";
+        private const string KiFemaleAttack2HPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/2H/HumanF@Attack2H01.fbx";
+        private const string KiCombatDamagePath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/HumanF@CombatDamage01.fbx";
+        private const string KiDeathPath = "Assets/Kevin Iglesias/Human Animations/Animations/Female/Combat/HumanF@Death01.fbx";
         private const string KiUpperBodyMaskPath = "Assets/Kevin Iglesias/Human Animations/Models/Avatar Masks/Human Body Upper Mask.mask";
 
-        // Weapons (1 = Sword, 2 = Spear/Polearm, 3 = Battle Axe / Warhammer) & Off-Hand Shield
+        // Weapons (1 = Sword, 2 = Spear/Polearm, 3 = Battle Axe)
         private static readonly string[] WeaponPrefabPaths = new string[]
         {
-            "Assets/Prefabs/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Sword.prefab",
-            "Assets/Prefabs/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Spear.prefab",
-            "Assets/Prefabs/Dungon Pack/Prefabs/Axe.prefab"
+            "Assets/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Sword.prefab",
+            "Assets/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Spear.prefab",
+            "Assets/Dungon Pack/Prefabs/Axe.prefab"
         };
 
         private static readonly string[] FallbackWeaponPrefabPaths = new string[]
@@ -83,14 +76,19 @@ namespace StealthGame.Editor
             "Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Warhammer.prefab"
         };
 
-        private const string ShieldPrefabPath = "Assets/Prefabs/BrokenVector/LowPolyDungeon/Prefabs/Clutter/Shield.prefab";
-        private const string FallbackShieldPrefabPath = "Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Melee Animations/Prefabs/Weapons/Human_Shield.prefab";
-
         private static readonly string[] WeaponNames = new string[] { "Weapon_Sword", "Weapon_Spear", "Weapon_Axe" };
 
         static PlayerCharacterSetup()
         {
             EditorApplication.delayCall += AutoInitializeIfNeeded;
+            EditorApplication.projectChanged += () =>
+            {
+                EditorApplication.delayCall += AutoInitializeIfNeeded;
+            };
+            EditorSceneManager.sceneOpened += (scene, mode) =>
+            {
+                EditorApplication.delayCall += AutoInitializeIfNeeded;
+            };
             EditorApplication.playModeStateChanged += state =>
             {
                 if (state == PlayModeStateChange.EnteredEditMode)
@@ -108,16 +106,154 @@ namespace StealthGame.Editor
             var activePlayer = GameObject.Find("PlayerCapsule");
             bool sceneNeedsSetup = false;
 
+            GameObject polygonWomanPrefab = FindPolygonApocalypseWomanPrefab();
+
             if (activePlayer != null)
             {
                 var pcc = activePlayer.GetComponent<PlayerCharacterController>();
                 var receiver = activePlayer.GetComponentInChildren<PlayerAnimationEventReceiver>(true);
-                sceneNeedsSetup = pcc == null || pcc.setupVersion < TargetSetupVersion || receiver == null;
+                bool needsPolygonSwap = polygonWomanPrefab != null &&
+                                        pcc != null &&
+                                        pcc.modularHeroController != null; // Still using GanzSe instead of Polygon Woman
+                sceneNeedsSetup = pcc == null || pcc.setupVersion < TargetSetupVersion || receiver == null || needsPolygonSwap;
             }
 
             if (controllerMissing || sceneNeedsSetup)
             {
                 SetupPlayerCharacterAndAnimations();
+            }
+        }
+
+        private static GameObject FindPolygonApocalypseWomanPrefab()
+        {
+            string[] directPaths = new[]
+            {
+                PolygonCoolFemalePrefabPath,
+                PolygonSoldierFemalePrefabPath,
+                PolygonScoutFemalePrefabPath
+            };
+
+            foreach (string directPath in directPaths)
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(directPath);
+                if (prefab != null) return prefab;
+            }
+
+            // Preferred Polygon Apocalypse female character names
+            string[] preferredNames = new[]
+            {
+                "SM_Chr_Cool_Female_01",
+                "SM_Chr_Soldier_Female_01",
+                "SM_Chr_Scout_Female_01",
+                "SM_Chr_Teen_Female_01",
+                "SM_Chr_Mechanic_Female_01",
+                "SM_Chr_Eastern_Female_01",
+                "SM_Chr_Punk_Female_01",
+                "Character_Female_Survivor_01"
+            };
+
+            string[] guids = AssetDatabase.FindAssets("Female t:Prefab");
+            List<string> candidatePaths = new List<string>();
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (string.IsNullOrEmpty(path)) continue;
+                if (path.Contains("PolygonZombies") || path.Contains("Prefabs/Enemies") || path.Contains("Dummy") || path.Contains("Chr_Attach") || path.Contains("Zombie"))
+                    continue;
+                if (path.Contains("PolygonApocalypse") || path.Contains("Character_Female") || path.Contains("Apocalypse"))
+                {
+                    candidatePaths.Add(path);
+                }
+            }
+
+            foreach (string pref in preferredNames)
+            {
+                string match = candidatePaths.FirstOrDefault(p => p.Contains(pref));
+                if (!string.IsNullOrEmpty(match))
+                {
+                    return AssetDatabase.LoadAssetAtPath<GameObject>(match);
+                }
+            }
+
+            if (candidatePaths.Count > 0)
+            {
+                return AssetDatabase.LoadAssetAtPath<GameObject>(candidatePaths[0]);
+            }
+
+            return null;
+        }
+
+        private static void EnsurePolygonCharacterHumanoidRig()
+        {
+            if (File.Exists(PolygonCharactersModelPath))
+            {
+                var importer = AssetImporter.GetAtPath(PolygonCharactersModelPath) as ModelImporter;
+                if (importer != null)
+                {
+                    bool needsReimport = false;
+                    if (importer.animationType != ModelImporterAnimationType.Human)
+                    {
+                        importer.animationType = ModelImporterAnimationType.Human;
+                        importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                        needsReimport = true;
+                    }
+                    if (!importer.isReadable)
+                    {
+                        importer.isReadable = true;
+                        needsReimport = true;
+                    }
+
+                    // Fix Synty Unity 5 Hips->Root mapping so Mixamo animations rotate Hips instead of Root
+                    HumanDescription desc = importer.humanDescription;
+                    if (desc.human != null && desc.human.Length > 0)
+                    {
+                        HumanBone[] humanBones = desc.human;
+                        for (int i = 0; i < humanBones.Length; i++)
+                        {
+                            if (humanBones[i].humanName == "Hips" && humanBones[i].boneName != "Hips")
+                            {
+                                humanBones[i].boneName = "Hips";
+                                desc.human = humanBones;
+                                importer.humanDescription = desc;
+                                needsReimport = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (needsReimport)
+                    {
+                        importer.SaveAndReimport();
+                    }
+                    else
+                    {
+                        var testMesh = AssetDatabase.LoadAssetAtPath<Mesh>(PolygonCharactersModelPath);
+                        if (testMesh != null && !testMesh.isReadable)
+                        {
+                            AssetDatabase.ImportAsset(PolygonCharactersModelPath, ImportAssetOptions.ForceUpdate);
+                        }
+                    }
+                }
+            }
+
+            // Ensure hair, backpack, and pouch attachment FBX models are imported before instantiating SM_Chr_Cool_Female_01
+            string[] attachModels = new[]
+            {
+                "Assets/PolygonApocalypse/Models/SM_Chr_Attach_Cool_Female_Hair_01.fbx",
+                "Assets/PolygonApocalypse/Models/SM_Chr_Attach_Backpack_Large_Extras_01.fbx",
+                "Assets/PolygonApocalypse/Models/SM_Chr_Attach_Pouch_01.fbx"
+            };
+            foreach (string attachPath in attachModels)
+            {
+                if (File.Exists(attachPath) && AssetDatabase.LoadAssetAtPath<Mesh>(attachPath) == null)
+                {
+                    AssetDatabase.ImportAsset(attachPath, ImportAssetOptions.ForceUpdate);
+                }
+            }
+
+            if (File.Exists(PolygonCoolFemalePrefabPath))
+            {
+                AssetDatabase.ImportAsset(PolygonCoolFemalePrefabPath, ImportAssetOptions.ForceUpdate);
             }
         }
 
@@ -129,21 +265,31 @@ namespace StealthGame.Editor
             Directory.CreateDirectory("Assets/Materials/Characters");
             Directory.CreateDirectory("Assets/Prefabs/Player");
 
-            ImportCustomHumanoidFbxFolder();
+            EnsurePolygonCharacterHumanoidRig();
+            ImportMixamoHumanoidFbxFolder();
 
-            AnimationClip crouchClip = CreateOrUpdateCrouchClip(AnimFolder + "/Player_Crouch_Idle.anim");
-            AnimationClip slash1Clip = LoadClipAtPath(KiAttack1HRPath) ?? CreateOrUpdateAttackClip(AnimFolder + "/Player_Attack_Slash1.anim", 1);
-            AnimationClip slash2Clip = LoadClipAtPath(KiAttack1HLPath) ?? CreateOrUpdateAttackClip(AnimFolder + "/Player_Attack_Slash2.anim", 2);
-            AnimationClip heavy3Clip = LoadClipAtPath(KiAttack2HPath) ?? CreateOrUpdateAttackClip(AnimFolder + "/Player_Attack_Heavy3.anim", 3);
-            AnimationClip spearClip = LoadClipAtPath(KiAttackPolearmPath) ?? slash2Clip;
-            AnimationClip shieldParryClip = LoadClipAtPath(KiAttackShieldPath) ?? slash1Clip;
+            AnimationClip idleClip = LoadClipAtPath(MixamoIdlePath) ?? LoadClipAtPath(KiFemaleIdlePath);
+            AnimationClip walkClip = LoadClipAtPath(MixamoWalkPath) ?? LoadClipAtPath(KiFemaleWalkPath);
+            AnimationClip runClip = LoadClipAtPath(MixamoRunPath) ?? LoadClipAtPath(KiFemaleRunPath);
+            AnimationClip jumpClip = LoadClipAtPath(MixamoJumpPath) ?? LoadClipAtPath(KiFemaleJumpBeginPath);
+            AnimationClip fallClip = LoadClipAtPath(KiFemaleFallPath) ?? jumpClip;
+            AnimationClip landClip = LoadClipAtPath(KiFemaleJumpLandPath);
+
+            AnimationClip crouchIdleClip = LoadClipAtPath(MixamoCrouchIdlePath) ?? CreateOrUpdateCrouchClip(AnimFolder + "/Player_Crouch_Idle.anim");
+            AnimationClip crouchWalkClip = LoadClipAtPath(MixamoCrouchWalkPath) ?? walkClip;
+
+            AnimationClip swordAttackClip = LoadClipAtPath(MixamoSwordAttackPath) ?? LoadClipAtPath(KiFemaleAttack1HPath);
+            AnimationClip spearAttackClip = LoadClipAtPath(MixamoSpearAttackPath) ?? LoadClipAtPath(KiFemaleAttackPolearmPath);
+            AnimationClip axeAttackClip = LoadClipAtPath(MixamoAxeAttackPath) ?? LoadClipAtPath(KiFemaleAttack2HPath);
+
             AnimationClip hitClip = LoadClipAtPath(KiCombatDamagePath);
             AnimationClip deathClip = LoadClipAtPath(KiDeathPath);
 
             AnimatorController controller = CreateOrUpdateAnimatorController(
-                crouchClip, slash1Clip, slash2Clip, heavy3Clip, spearClip, shieldParryClip, hitClip, deathClip);
-
-            UpgradeZombieControllerAndEnemies(hitClip, deathClip);
+                idleClip, walkClip, runClip, jumpClip, fallClip, landClip,
+                crouchIdleClip, crouchWalkClip,
+                swordAttackClip, spearAttackClip, axeAttackClip,
+                hitClip, deathClip);
 
             var playerObj = GameObject.Find("PlayerCapsule");
             if (playerObj != null)
@@ -151,11 +297,11 @@ namespace StealthGame.Editor
                 ConfigurePlayerGameObject(playerObj, controller);
                 EditorSceneManager.MarkSceneDirty(playerObj.scene);
                 EditorSceneManager.SaveScene(playerObj.scene);
-                Debug.Log($"[PlayerCharacterSetup] Upgraded PlayerCapsule & Enemies (v{TargetSetupVersion}) in '{playerObj.scene.name}' with 8-Direction 2D Locomotion BlendTree, Right-Click Shield Block/Parry, Weapon Swing Trails, and Enemy Hit/Death Reactions.");
+                Debug.Log($"[PlayerCharacterSetup] Upgraded PlayerCapsule (v{TargetSetupVersion}) in '{playerObj.scene.name}' with Mixamo Action Animations (Idle, Walk, Run, Jump, Crouch, and distinct Sword/Spear/Axe Attacks), Attack Spam Buffer, Camera Pan/Tilt Clamping, and No Shield/Stamina/Dash.");
             }
             else
             {
-                Debug.Log("[PlayerCharacterSetup] Updated PlayerCharacter.controller & ZombieIdle.controller. Open 'Level 1 Base.unity' and run this tool to upgrade PlayerCapsule.");
+                Debug.Log("[PlayerCharacterSetup] Updated PlayerCharacter.controller with Mixamo animations.");
             }
 
             AssetDatabase.SaveAssets();
@@ -164,7 +310,7 @@ namespace StealthGame.Editor
 
         private static AnimationClip LoadClipAtPath(string assetPath)
         {
-            if (string.IsNullOrEmpty(assetPath)) return null;
+            if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return null;
             return AssetDatabase.LoadAllAssetsAtPath(assetPath)
                 .OfType<AnimationClip>()
                 .FirstOrDefault(c => !c.name.StartsWith("__preview__"));
@@ -182,65 +328,30 @@ namespace StealthGame.Editor
             }
             if (playerObj == null)
             {
-                Debug.LogWarning("[Player Check] No PlayerCapsule found in active scene. Open 'Level 1 Base.unity' first.");
+                Debug.LogWarning("[Player Check] No PlayerCapsule found in active scene.");
                 return;
             }
 
             var pcc = playerObj.GetComponent<PlayerCharacterController>();
             bool hasAnimator = pcc != null && pcc.characterAnimator != null && pcc.characterAnimator.runtimeAnimatorController != null;
             bool hasWeapons = pcc != null && pcc.thirdPersonWeapons != null && pcc.thirdPersonWeapons.All(w => w != null && !w.isStatic);
-            bool hasShield = pcc != null && pcc.leftHandShield != null && !pcc.leftHandShield.isStatic;
-            bool hasModularHero = pcc != null && pcc.modularHeroController != null;
-            int combatEnemies = Object.FindObjectsByType<EnemyCombatTarget>(FindObjectsSortMode.None).Length;
+            bool hasMixamoClips = LoadClipAtPath(MixamoIdlePath) != null && LoadClipAtPath(MixamoSwordAttackPath) != null;
 
-            Debug.Log($"[Player Check] Scene='{playerObj.scene.name}' | SetupVersion={pcc?.setupVersion} | HasGanzSeCharacter={hasModularHero} | Has8WayAnimator={hasAnimator} | All3WeaponsReady={hasWeapons} | HasShield={hasShield} | CombatReadyEnemies={combatEnemies}");
-        }
-
-        private static void UpgradeZombieControllerAndEnemies(AnimationClip hitClip, AnimationClip deathClip)
-        {
-            var zombieController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ZombieControllerPath);
-            if (zombieController != null && !(zombieController.layers[0].stateMachine.defaultState.motion is BlendTree) && (hitClip != null || deathClip != null))
-            {
-                EnsureParameter(zombieController, "Hit", AnimatorControllerParameterType.Trigger);
-                EnsureParameter(zombieController, "Death", AnimatorControllerParameterType.Trigger);
-                EnsureParameter(zombieController, "IsDead", AnimatorControllerParameterType.Bool);
-
-                var sm = zombieController.layers[0].stateMachine;
-                if (hitClip != null)
-                {
-                    AddOrUpdateTriggerState(sm, "Zombie Hit", hitClip, "Hit", new Vector3(360f, 120f, 0f), true);
-                }
-                if (deathClip != null)
-                {
-                    AddOrUpdateTriggerState(sm, "Zombie Death", deathClip, "Death", new Vector3(360f, 210f, 0f), false);
-                }
-                EditorUtility.SetDirty(zombieController);
-            }
-
-            // Attach EnemyCombatTarget to all EnemyDetection objects in the active scene
-            var sceneDetectors = Object.FindObjectsByType<EnemyDetection>(FindObjectsSortMode.None);
-            foreach (var det in sceneDetectors)
-            {
-                if (det == null) continue;
-                var combatTarget = det.GetComponent<EnemyCombatTarget>();
-                if (combatTarget == null)
-                {
-                    combatTarget = det.gameObject.AddComponent<EnemyCombatTarget>();
-                }
-                combatTarget.enemyDetection = det;
-                combatTarget.enemyAnimator = det.GetComponentInChildren<Animator>();
-                combatTarget.enemyCollider = det.GetComponent<Collider>();
-                EditorUtility.SetDirty(det.gameObject);
-            }
+            Debug.Log($"[Player Check] Scene='{playerObj.scene.name}' | SetupVersion={pcc?.setupVersion} | HasMixamoClips={hasMixamoClips} | HasAnimator={hasAnimator} | All3WeaponsReady={hasWeapons}");
         }
 
         private static AnimatorController CreateOrUpdateAnimatorController(
-            AnimationClip crouchClip,
-            AnimationClip slash1Clip,
-            AnimationClip slash2Clip,
-            AnimationClip heavy3Clip,
-            AnimationClip spearClip,
-            AnimationClip shieldParryClip,
+            AnimationClip idleClip,
+            AnimationClip walkClip,
+            AnimationClip runClip,
+            AnimationClip jumpClip,
+            AnimationClip fallClip,
+            AnimationClip landClip,
+            AnimationClip crouchIdleClip,
+            AnimationClip crouchWalkClip,
+            AnimationClip swordAttackClip,
+            AnimationClip spearAttackClip,
+            AnimationClip axeAttackClip,
             AnimationClip hitClip,
             AnimationClip deathClip)
         {
@@ -264,104 +375,113 @@ namespace StealthGame.Editor
             EnsureParameter(controller, "Jump", AnimatorControllerParameterType.Bool);
             EnsureParameter(controller, "FreeFall", AnimatorControllerParameterType.Bool);
             EnsureParameter(controller, "IsCrouching", AnimatorControllerParameterType.Bool);
-            EnsureParameter(controller, "IsBlocking", AnimatorControllerParameterType.Bool);
-            EnsureParameter(controller, "ComboStep", AnimatorControllerParameterType.Int);
             EnsureParameter(controller, "WeaponType", AnimatorControllerParameterType.Int);
             EnsureParameter(controller, "Attack", AnimatorControllerParameterType.Trigger);
-            EnsureParameter(controller, "Parry", AnimatorControllerParameterType.Trigger);
+            EnsureParameter(controller, "FullBodyAttack", AnimatorControllerParameterType.Trigger);
             EnsureParameter(controller, "Hit", AnimatorControllerParameterType.Trigger);
             EnsureParameter(controller, "Death", AnimatorControllerParameterType.Trigger);
 
             var baseSm = controller.layers[0].stateMachine;
 
-            AnimationClip kiIdle = LoadClipAtPath(KiCombatIdle1HPath) ?? LoadClipAtPath(KiIdle01Path);
-
-            // Load 8-Way Walk & Run Clips
-            AnimationClip walkF = LoadClipAtPath(KiWalkForwardPath);
-            AnimationClip walkB = LoadClipAtPath(KiWalkBackwardPath) ?? walkF;
-            AnimationClip walkL = LoadClipAtPath(KiWalkLeftPath) ?? walkF;
-            AnimationClip walkR = LoadClipAtPath(KiWalkRightPath) ?? walkF;
-            AnimationClip walkFL = LoadClipAtPath(KiWalkForwardLeftPath) ?? walkF;
-            AnimationClip walkFR = LoadClipAtPath(KiWalkForwardRightPath) ?? walkF;
-            AnimationClip walkBL = LoadClipAtPath(KiWalkBackwardLeftPath) ?? walkB;
-            AnimationClip walkBR = LoadClipAtPath(KiWalkBackwardRightPath) ?? walkB;
-
-            AnimationClip runF = LoadClipAtPath(KiRunForwardPath);
-            AnimationClip runB = LoadClipAtPath(KiRunBackwardPath) ?? runF;
-            AnimationClip runL = LoadClipAtPath(KiRunLeftPath) ?? runF;
-            AnimationClip runR = LoadClipAtPath(KiRunRightPath) ?? runF;
-            AnimationClip runFL = LoadClipAtPath(KiRunForwardLeftPath) ?? runF;
-            AnimationClip runFR = LoadClipAtPath(KiRunForwardRightPath) ?? runF;
-            AnimationClip runBL = LoadClipAtPath(KiRunBackwardLeftPath) ?? runB;
-            AnimationClip runBR = LoadClipAtPath(KiRunBackwardRightPath) ?? runB;
-
-            AnimationClip kiSprint = LoadClipAtPath(KiSprintForwardPath) ?? runF;
-            AnimationClip kiJumpStart = LoadClipAtPath(KiJumpBeginPath);
-            AnimationClip kiFall = LoadClipAtPath(KiFallPath);
-            AnimationClip kiJumpLand = LoadClipAtPath(KiJumpLandPath);
-
-            // Configure 8-Direction 2D Freeform Directional BlendTree (MoveX, MoveZ)
+            // 1. Standing Locomotion BlendTree (Mixamo Breathing_Idle, Walking, Running)
             var locoState = baseSm.states.Select(s => s.state).FirstOrDefault(s => s.name == "Idle Walk Run Blend");
-            if (locoState != null && locoState.motion is BlendTree blendTree && kiIdle != null && walkF != null && runF != null)
+            if (locoState != null && locoState.motion is BlendTree blendTree && idleClip != null && walkClip != null && runClip != null)
             {
-                blendTree.blendType = BlendTreeType.FreeformDirectional2D;
-                blendTree.blendParameter = "MoveX";
-                blendTree.blendParameterY = "MoveZ";
+                blendTree.blendType = BlendTreeType.Simple1D;
+                blendTree.blendParameter = "Speed";
+                blendTree.useAutomaticThresholds = false;
 
-                var children = new List<ChildMotion>
-                {
-                    new ChildMotion { motion = kiIdle, position = new Vector2(0f, 0f), timeScale = 1f },
-
-                    // 8-Direction Walk Ring (radius = 2.0 m/s)
-                    new ChildMotion { motion = walkF,  position = new Vector2(0f, 2.0f), timeScale = 1f },
-                    new ChildMotion { motion = walkB,  position = new Vector2(0f, -2.0f), timeScale = 1f },
-                    new ChildMotion { motion = walkL,  position = new Vector2(-2.0f, 0f), timeScale = 1f },
-                    new ChildMotion { motion = walkR,  position = new Vector2(2.0f, 0f), timeScale = 1f },
-                    new ChildMotion { motion = walkFL, position = new Vector2(-1.41f, 1.41f), timeScale = 1f },
-                    new ChildMotion { motion = walkFR, position = new Vector2(1.41f, 1.41f), timeScale = 1f },
-                    new ChildMotion { motion = walkBL, position = new Vector2(-1.41f, -1.41f), timeScale = 1f },
-                    new ChildMotion { motion = walkBR, position = new Vector2(1.41f, -1.41f), timeScale = 1f },
-
-                    // 8-Direction Run Ring (radius = 4.0 m/s)
-                    new ChildMotion { motion = runF,  position = new Vector2(0f, 4.0f), timeScale = 1f },
-                    new ChildMotion { motion = runB,  position = new Vector2(0f, -4.0f), timeScale = 1f },
-                    new ChildMotion { motion = runL,  position = new Vector2(-4.0f, 0f), timeScale = 1f },
-                    new ChildMotion { motion = runR,  position = new Vector2(4.0f, 0f), timeScale = 1f },
-                    new ChildMotion { motion = runFL, position = new Vector2(-2.83f, 2.83f), timeScale = 1f },
-                    new ChildMotion { motion = runFR, position = new Vector2(2.83f, 2.83f), timeScale = 1f },
-                    new ChildMotion { motion = runBL, position = new Vector2(-2.83f, -2.83f), timeScale = 1f },
-                    new ChildMotion { motion = runBR, position = new Vector2(2.83f, -2.83f), timeScale = 1f },
-
-                    // Sprint Forward (6.5 m/s)
-                    new ChildMotion { motion = kiSprint, position = new Vector2(0f, 6.5f), timeScale = 1f }
-                };
-
-                blendTree.children = children.ToArray();
+                var children = new ChildMotion[3];
+                children[0] = new ChildMotion { motion = idleClip, threshold = 0f, timeScale = 1f };
+                children[1] = new ChildMotion { motion = walkClip, threshold = 4.0f, timeScale = 1.05f };
+                children[2] = new ChildMotion { motion = runClip, threshold = 6.0f, timeScale = 1.05f };
+                blendTree.children = children;
                 EditorUtility.SetDirty(blendTree);
             }
 
-            ReplaceStateClipIfFound(baseSm, "JumpStart", kiJumpStart);
-            ReplaceStateClipIfFound(baseSm, "InAir", kiFall);
-            ReplaceStateClipIfFound(baseSm, "JumpLand", kiJumpLand);
+            // 2. Jump States (Mixamo Jumping — single clean jump returning directly to Idle Walk Run Blend)
+            ReplaceStateClipIfFound(baseSm, "JumpStart", jumpClip, 1.85f);
+            ReplaceStateClipIfFound(baseSm, "InAir", fallClip, 1.0f);
+            ReplaceStateClipIfFound(baseSm, "JumpLand", landClip, 1.25f);
 
-            AddOrUpdateAttackState(baseSm, "Melee Slash 1", slash1Clip, 1, -1, new Vector3(520f, 320f, 0f), baseSm.defaultState);
-            AddOrUpdateAttackState(baseSm, "Melee Slash 2", slash2Clip, 2, -1, new Vector3(520f, 390f, 0f), baseSm.defaultState);
-            AddOrUpdateAttackState(baseSm, "Melee Heavy 3", heavy3Clip, 3, -1, new Vector3(520f, 460f, 0f), baseSm.defaultState);
-            AddOrUpdateAttackState(baseSm, "Melee Spear Thrust", spearClip, 1, 1, new Vector3(520f, 530f, 0f), baseSm.defaultState);
+            var jumpStartState = baseSm.states.Select(s => s.state).FirstOrDefault(s => s.name == "JumpStart");
+            if (jumpStartState != null && locoState != null)
+            {
+                jumpStartState.iKOnFeet = false;
+                foreach (var oldT in jumpStartState.transitions.ToArray())
+                {
+                    jumpStartState.RemoveTransition(oldT);
+                }
+                var jumpToLoco = jumpStartState.AddTransition(locoState);
+                jumpToLoco.hasExitTime = true;
+                jumpToLoco.exitTime = 0.78f;
+                jumpToLoco.duration = 0.16f;
+                EditorUtility.SetDirty(jumpStartState);
+            }
 
-            if (shieldParryClip != null) AddOrUpdateTriggerState(baseSm, "Shield Parry", shieldParryClip, "Parry", new Vector3(520f, 565f, 0f), true);
-            if (hitClip != null) AddOrUpdateTriggerState(baseSm, "Combat Hit", hitClip, "Hit", new Vector3(520f, 615f, 0f), true);
-            if (deathClip != null) AddOrUpdateTriggerState(baseSm, "Combat Death", deathClip, "Death", new Vector3(520f, 670f, 0f), false);
-
+            // 3. Crouch State with Mixamo Crouch_Idle + Crouched_Walking BlendTree
             var crouchState = baseSm.states.Select(s => s.state).FirstOrDefault(s => s.name == "Crouch Idle");
             if (crouchState == null)
             {
                 crouchState = baseSm.AddState("Crouch Idle", new Vector3(-80f, 400f, 0f));
             }
-            crouchState.motion = crouchClip;
-            crouchState.iKOnFeet = true;
 
-            AvatarMask upperMask = AssetDatabase.LoadAssetAtPath<AvatarMask>(KiUpperBodyMaskPath);
+            BlendTree crouchBlendTree = crouchState.motion as BlendTree;
+            if (crouchBlendTree == null)
+            {
+                crouchBlendTree = new BlendTree
+                {
+                    name = "Crouch Walk Blend",
+                    blendType = BlendTreeType.Simple1D,
+                    blendParameter = "Speed",
+                    useAutomaticThresholds = false,
+                    hideFlags = HideFlags.HideInHierarchy
+                };
+                AssetDatabase.AddObjectToAsset(crouchBlendTree, controller);
+                crouchState.motion = crouchBlendTree;
+            }
+            crouchBlendTree.blendType = BlendTreeType.Simple1D;
+            crouchBlendTree.blendParameter = "Speed";
+            crouchBlendTree.useAutomaticThresholds = false;
+            crouchBlendTree.children = new[]
+            {
+                new ChildMotion { motion = crouchIdleClip, threshold = 0f, timeScale = 1f },
+                new ChildMotion { motion = crouchWalkClip ?? crouchIdleClip, threshold = 2.2f, timeScale = 1.25f }
+            };
+            crouchState.iKOnFeet = true;
+            EditorUtility.SetDirty(crouchBlendTree);
+
+            // Ensure bidirectional transitions between Idle Walk Run Blend and Crouch Idle
+            if (locoState != null)
+            {
+                if (!locoState.transitions.Any(t => t.destinationState == crouchState))
+                {
+                    var toCrouch = locoState.AddTransition(crouchState);
+                    toCrouch.hasExitTime = false;
+                    toCrouch.duration = 0.15f;
+                    toCrouch.AddCondition(AnimatorConditionMode.If, 0f, "IsCrouching");
+                }
+                if (!crouchState.transitions.Any(t => t.destinationState == locoState))
+                {
+                    var fromCrouch = crouchState.AddTransition(locoState);
+                    fromCrouch.hasExitTime = false;
+                    fromCrouch.duration = 0.15f;
+                    fromCrouch.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsCrouching");
+                }
+            }
+
+            // 4. Clean up legacy attack/parry states and add Weapon-Specific Standing Full-Body Attack States (0=Sword, 1=Spear, 2=Axe)
+            RemoveStatesByName(baseSm, new[] { "Melee Slash 1", "Melee Slash 2", "Melee Heavy 3", "Melee Spear Thrust", "Shield Parry" });
+
+            AddOrUpdateWeaponAttackState(baseSm, "Melee Sword Attack", swordAttackClip, 0, 1.50f, "FullBodyAttack", true, new Vector3(520f, 320f, 0f), baseSm.defaultState);
+            AddOrUpdateWeaponAttackState(baseSm, "Melee Spear Attack", spearAttackClip, 1, 1.85f, "FullBodyAttack", true, new Vector3(520f, 390f, 0f), baseSm.defaultState);
+            AddOrUpdateWeaponAttackState(baseSm, "Melee Axe Attack", axeAttackClip, 2, 1.75f, "FullBodyAttack", true, new Vector3(520f, 460f, 0f), baseSm.defaultState);
+
+            if (hitClip != null) AddOrUpdateTriggerState(baseSm, "Combat Hit", hitClip, "Hit", new Vector3(520f, 540f, 0f), true);
+            if (deathClip != null) AddOrUpdateTriggerState(baseSm, "Combat Death", deathClip, "Death", new Vector3(520f, 610f, 0f), false);
+
+            // 5. Upper-Body Combat Mask Layer (Weapon-Specific Attacks while Moving or Crouching)
+            AvatarMask upperMask = CreateOrUpdateHumanoidUpperBodyMask();
             if (upperMask != null)
             {
                 var layers = controller.layers.ToList();
@@ -398,43 +518,74 @@ namespace StealthGame.Editor
                     upperSm.defaultState = emptyState;
                 }
 
-                AddOrUpdateAttackState(upperSm, "Upper Slash 1", slash1Clip, 1, -1, new Vector3(500f, 80f, 0f), emptyState);
-                AddOrUpdateAttackState(upperSm, "Upper Slash 2", slash2Clip, 2, -1, new Vector3(500f, 150f, 0f), emptyState);
-                AddOrUpdateAttackState(upperSm, "Upper Heavy 3", heavy3Clip, 3, -1, new Vector3(500f, 220f, 0f), emptyState);
-                AddOrUpdateAttackState(upperSm, "Upper Spear Thrust", spearClip, 1, 1, new Vector3(500f, 290f, 0f), emptyState);
-                if (shieldParryClip != null)
-                {
-                    AddOrUpdateTriggerState(upperSm, "Upper Shield Parry", shieldParryClip, "Parry", new Vector3(500f, 360f, 0f), true);
-                }
+                RemoveStatesByName(upperSm, new[] { "Upper Slash 1", "Upper Slash 2", "Upper Heavy 3", "Upper Spear Thrust", "Upper Shield Parry" });
+
+                AddOrUpdateWeaponAttackState(upperSm, "Upper Sword Attack", swordAttackClip, 0, 1.50f, "Attack", false, new Vector3(500f, 80f, 0f), emptyState);
+                AddOrUpdateWeaponAttackState(upperSm, "Upper Spear Attack", spearAttackClip, 1, 1.85f, "Attack", false, new Vector3(500f, 160f, 0f), emptyState);
+                AddOrUpdateWeaponAttackState(upperSm, "Upper Axe Attack", axeAttackClip, 2, 1.75f, "Attack", false, new Vector3(500f, 240f, 0f), emptyState);
             }
 
             EditorUtility.SetDirty(controller);
             return controller;
         }
 
-        private static void ReplaceStateClipIfFound(AnimatorStateMachine sm, string stateName, AnimationClip newClip)
+        private static AvatarMask CreateOrUpdateHumanoidUpperBodyMask()
         {
-            if (newClip == null) return;
-            var state = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == stateName);
-            if (state != null)
+            var mask = AssetDatabase.LoadAssetAtPath<AvatarMask>(UpperBodyMaskPath);
+            bool isNew = false;
+            if (mask == null)
             {
-                state.motion = newClip;
-                EditorUtility.SetDirty(state);
+                mask = new AvatarMask();
+                isNew = true;
+            }
+
+            mask.transformCount = 0;
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Root, false);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Body, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Head, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg, false);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightLeg, false);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFootIK, false);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFootIK, false);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftHandIK, false);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightHandIK, false);
+
+            if (isNew)
+                AssetDatabase.CreateAsset(mask, UpperBodyMaskPath);
+            else
+                EditorUtility.SetDirty(mask);
+
+            return mask;
+        }
+
+        private static void RemoveStatesByName(AnimatorStateMachine sm, string[] stateNames)
+        {
+            foreach (string name in stateNames)
+            {
+                var found = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == name);
+                if (found != null)
+                {
+                    foreach (var t in sm.anyStateTransitions.Where(t => t.destinationState == found).ToArray())
+                    {
+                        sm.RemoveAnyStateTransition(t);
+                    }
+                    sm.RemoveState(found);
+                }
             }
         }
 
-        private static void EnsureParameter(AnimatorController controller, string paramName, AnimatorControllerParameterType type)
-        {
-            if (controller.parameters.Any(p => p.name == paramName)) return;
-            controller.AddParameter(paramName, type);
-        }
-
-        private static void AddOrUpdateAttackState(
+        private static void AddOrUpdateWeaponAttackState(
             AnimatorStateMachine sm,
             string stateName,
             AnimationClip clip,
-            int comboStep,
-            int requiredWeaponType,
+            int weaponType,
+            float clipSpeed,
+            string triggerParam,
+            bool interruptOnMovement,
             Vector3 position,
             AnimatorState returnState)
         {
@@ -444,6 +595,7 @@ namespace StealthGame.Editor
                 state = sm.AddState(stateName, position);
             }
             state.motion = clip;
+            state.speed = clipSpeed;
 
             foreach (var t in sm.anyStateTransitions.Where(t => t.destinationState == state).ToArray())
             {
@@ -454,24 +606,48 @@ namespace StealthGame.Editor
             anyTransition.hasExitTime = false;
             anyTransition.duration = 0.08f;
             anyTransition.canTransitionToSelf = false;
-            anyTransition.AddCondition(AnimatorConditionMode.If, 0f, "Attack");
-            anyTransition.AddCondition(AnimatorConditionMode.Equals, comboStep, "ComboStep");
-            if (requiredWeaponType >= 0)
-            {
-                anyTransition.AddCondition(AnimatorConditionMode.Equals, requiredWeaponType, "WeaponType");
-            }
-            else if (comboStep == 1)
-            {
-                anyTransition.AddCondition(AnimatorConditionMode.NotEqual, 1, "WeaponType");
-            }
+            anyTransition.AddCondition(AnimatorConditionMode.If, 0f, triggerParam);
+            anyTransition.AddCondition(AnimatorConditionMode.Equals, weaponType, "WeaponType");
 
-            if (returnState != null && !state.transitions.Any(t => t.destinationState == returnState))
+            if (returnState != null)
             {
+                foreach (var oldT in state.transitions.ToArray())
+                {
+                    state.RemoveTransition(oldT);
+                }
+
                 var backTransition = state.AddTransition(returnState);
                 backTransition.hasExitTime = true;
-                backTransition.exitTime = 0.88f;
-                backTransition.duration = 0.12f;
+                backTransition.exitTime = 0.86f;
+                backTransition.duration = 0.14f;
+
+                if (interruptOnMovement)
+                {
+                    // If the player starts walking/running mid-swing on the Base Layer, blend legs back to locomotion while UpperBodyCombat finishes the swing
+                    var moveCancel = state.AddTransition(returnState);
+                    moveCancel.hasExitTime = false;
+                    moveCancel.duration = 0.15f;
+                    moveCancel.AddCondition(AnimatorConditionMode.Greater, 0.35f, "Speed");
+                }
             }
+        }
+
+        private static void ReplaceStateClipIfFound(AnimatorStateMachine sm, string stateName, AnimationClip newClip, float speed = 1.0f)
+        {
+            if (newClip == null) return;
+            var state = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == stateName);
+            if (state != null)
+            {
+                state.motion = newClip;
+                state.speed = speed;
+                EditorUtility.SetDirty(state);
+            }
+        }
+
+        private static void EnsureParameter(AnimatorController controller, string paramName, AnimatorControllerParameterType type)
+        {
+            if (controller.parameters.Any(p => p.name == paramName)) return;
+            controller.AddParameter(paramName, type);
         }
 
         private static void AddOrUpdateTriggerState(
@@ -515,14 +691,16 @@ namespace StealthGame.Editor
                 if (col != null) col.enabled = false;
             }
 
-            // 2. Instantiate GanzSe Modular Character as PlayerVisualModel
+            // 2. Instantiate Polygon Apocalypse Woman (or fallback humanoid character) as PlayerVisualModel
             Transform existingVisual = playerObj.transform.Find("PlayerVisualModel");
             if (existingVisual != null)
             {
                 Object.DestroyImmediate(existingVisual.gameObject);
             }
 
-            var charPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(GanzSePrefabPath)
+            GameObject polygonWomanPrefab = FindPolygonApocalypseWomanPrefab();
+            var charPrefab = polygonWomanPrefab
+                             ?? AssetDatabase.LoadAssetAtPath<GameObject>(GanzSePrefabPath)
                              ?? AssetDatabase.LoadAssetAtPath<GameObject>(GanzSeOriginalPrefabPath)
                              ?? AssetDatabase.LoadAssetAtPath<GameObject>(ArmatureModelPath);
 
@@ -548,47 +726,117 @@ namespace StealthGame.Editor
 
             foreach (var t in visualModelObj.GetComponentsInChildren<Transform>(true))
             {
+                t.gameObject.hideFlags = HideFlags.None;
+                t.hideFlags = HideFlags.None;
                 GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
                 t.gameObject.isStatic = false;
             }
 
-            // 3. Configure GanzSe ModularHeroController (1 armor piece per category, gauntlets active on ARMS)
-            var modularController = ConfigureGanzSeModularParts(visualModelObj);
-
-            foreach (var smr in visualModelObj.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            foreach (var comp in visualModelObj.GetComponentsInChildren<Component>(true))
             {
-                var mats = smr.sharedMaterials;
-                for (int i = 0; i < mats.Length; i++) mats[i] = EnsureUrpMaterial(mats[i]);
-                smr.sharedMaterials = mats;
-                smr.updateWhenOffscreen = true;
+                if (comp != null) comp.hideFlags = HideFlags.None;
             }
 
-            var animator = visualModelObj.GetComponent<Animator>();
+            // Configure modular parts only if using GanzSe fallback; if using Polygon Apocalypse Woman, clean inactive meshes & repair hair/backpack attachments
+            ModularHeroController modularController = null;
+            SkinnedMeshRenderer activeBodySmr = null;
+            if (polygonWomanPrefab == null)
+            {
+                modularController = ConfigureGanzSeModularParts(visualModelObj);
+            }
+            else
+            {
+                foreach (var smr in visualModelObj.GetComponentsInChildren<SkinnedMeshRenderer>(true).ToArray())
+                {
+                    if (smr == null) continue;
+                    if (smr.gameObject.name == "SM_Chr_Cool_Female_01" || smr.gameObject.activeSelf)
+                    {
+                        smr.gameObject.SetActive(true);
+                        smr.enabled = true;
+                        activeBodySmr = smr;
+                    }
+                    else
+                    {
+                        Object.DestroyImmediate(smr.gameObject);
+                    }
+                }
+
+                // Ensure hair (SM_Chr_Attach_Cool_Female_Hair_01), backpack (SM_Chr_Attach_Backpack_Large_Extras_01), and pouch (SM_Chr_Attach_Pouch_01) meshes are assigned & active
+                foreach (var mf in visualModelObj.GetComponentsInChildren<MeshFilter>(true))
+                {
+                    if (mf == null) continue;
+                    mf.gameObject.SetActive(true);
+                    if (mf.sharedMesh == null)
+                    {
+                        string attachPath = $"Assets/PolygonApocalypse/Models/{mf.gameObject.name}.fbx";
+                        Mesh loadedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(attachPath);
+                        if (loadedMesh != null)
+                        {
+                            mf.sharedMesh = loadedMesh;
+                        }
+                    }
+                    var mr = mf.GetComponent<MeshRenderer>();
+                    if (mr != null) mr.enabled = true;
+                }
+            }
+
+            foreach (var renderer in visualModelObj.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = renderer.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++) mats[i] = EnsureUrpMaterial(mats[i]);
+                renderer.sharedMaterials = mats;
+                if (renderer is SkinnedMeshRenderer smr)
+                {
+                    smr.updateWhenOffscreen = true;
+                    if (activeBodySmr == null && smr.gameObject.activeInHierarchy)
+                        activeBodySmr = smr;
+                }
+            }
+
+            var animator = visualModelObj.GetComponentInChildren<Animator>();
             if (animator == null) animator = visualModelObj.AddComponent<Animator>();
+            if (polygonWomanPrefab != null && File.Exists(PolygonCharactersModelPath))
+            {
+                Avatar charAvatar = AssetDatabase.LoadAssetAtPath<Avatar>(PolygonCharactersModelPath);
+                if (charAvatar != null) animator.avatar = charAvatar;
+            }
             animator.runtimeAnimatorController = controller;
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
-            var eventReceiver = visualModelObj.GetComponent<PlayerAnimationEventReceiver>();
-            if (eventReceiver == null) eventReceiver = visualModelObj.AddComponent<PlayerAnimationEventReceiver>();
+            var eventReceiver = animator.GetComponent<PlayerAnimationEventReceiver>();
+            if (eventReceiver == null) eventReceiver = animator.gameObject.AddComponent<PlayerAnimationEventReceiver>();
 
-            // 4. Attach WeaponSocket_TP inside RightHand palm (used in BOTH 1st-Person and 3rd-Person)
+            // Build & save First-Person Right-Arm-Only Mesh asset so 1st-person view has zero torso/shoulder/neck clipping or polygon stretching
+            Transform rightLowerArm = (animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.RightLowerArm) : null)
+                                      ?? FindChildRecursive(visualModelObj.transform, "Elbow_R")
+                                      ?? FindChildRecursive(visualModelObj.transform, "LowerArm_R");
+            Mesh fullBodyMesh = activeBodySmr != null ? activeBodySmr.sharedMesh : null;
+            Mesh fpRightArmMesh = null;
+            if (activeBodySmr != null && fullBodyMesh != null && rightLowerArm != null)
+            {
+                fpRightArmMesh = PlayerCharacterController.BuildFirstPersonRightArmMesh(activeBodySmr, fullBodyMesh, rightLowerArm);
+                if (fpRightArmMesh != null)
+                {
+                    if (File.Exists(FpRightArmMeshAssetPath))
+                    {
+                        AssetDatabase.DeleteAsset(FpRightArmMeshAssetPath);
+                    }
+                    AssetDatabase.CreateAsset(fpRightArmMesh, FpRightArmMeshAssetPath);
+                }
+            }
+
+            // 3. Attach WeaponSocket_TP inside RightHand palm (No Shield on LeftHand)
             Transform rightHand = null;
-            Transform leftHand = null;
             if (animator.isHuman)
             {
                 rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
-                leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
             }
             if (rightHand == null)
             {
-                rightHand = FindChildRecursive(visualModelObj.transform, "hand_r")
+                rightHand = FindChildRecursive(visualModelObj.transform, "Hand_R")
+                            ?? FindChildRecursive(visualModelObj.transform, "hand_r")
                             ?? FindChildRecursive(visualModelObj.transform, "Right_Hand");
-            }
-            if (leftHand == null)
-            {
-                leftHand = FindChildRecursive(visualModelObj.transform, "hand_l")
-                           ?? FindChildRecursive(visualModelObj.transform, "Left_Hand");
             }
 
             Transform weaponSocket = null;
@@ -604,31 +852,9 @@ namespace StealthGame.Editor
                 weaponSocket = socketObj.transform;
                 weaponSocket.SetParent(rightHand, false);
 
-                weaponSocket.localPosition = new Vector3(-0.038f, 0.082f, 0.01f);
-                weaponSocket.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.forward);
+                PlayerCharacterController.ConfigureWeaponSocketForHandBone(weaponSocket, rightHand, animator);
 
                 tpWeapons = InstantiateWeaponSet(weaponSocket, false);
-            }
-
-            // 5. Attach ShieldSocket_TP and Off-Hand Shield onto LeftHand
-            Transform shieldSocket = null;
-            GameObject shieldObj = null;
-            if (leftHand != null)
-            {
-                shieldSocket = leftHand.Find("ShieldSocket_TP");
-                if (shieldSocket != null)
-                {
-                    Object.DestroyImmediate(shieldSocket.gameObject);
-                }
-                var sObj = new GameObject("ShieldSocket_TP");
-                shieldSocket = sObj.transform;
-                shieldSocket.SetParent(leftHand, false);
-
-                // In GanzSe hand_l local space, -X is the outside of the left forearm/wrist
-                shieldSocket.localPosition = new Vector3(-0.065f, 0.04f, 0.0f);
-                shieldSocket.localRotation = Quaternion.Euler(0f, -90f, 90f);
-
-                shieldObj = InstantiateOffHandShield(shieldSocket);
             }
 
             // Clean up any old disembodied FirstPersonWeaponPivot
@@ -644,9 +870,19 @@ namespace StealthGame.Editor
                 {
                     Object.DestroyImmediate(oldFpPivot.gameObject);
                 }
+                cameraRoot.localPosition = new Vector3(0f, 1.50f, 0f);
             }
 
-            // 6. Wire up PlayerCharacterController component
+            if (fpc != null)
+            {
+                fpc.MoveSpeed = 4.0f;
+                fpc.SprintSpeed = 6.0f;
+                fpc.TopClamp = 70.0f;
+                fpc.BottomClamp = -65.0f;
+                EditorUtility.SetDirty(fpc);
+            }
+
+            // 4. Wire up PlayerCharacterController component
             var pcc = playerObj.GetComponent<PlayerCharacterController>();
             if (pcc == null) pcc = playerObj.AddComponent<PlayerCharacterController>();
 
@@ -658,17 +894,19 @@ namespace StealthGame.Editor
             pcc.characterAnimator = animator;
             pcc.characterModelRoot = visualModelObj.transform;
             pcc.modularHeroController = modularController;
+            pcc.bodySkinnedMeshRenderer = activeBodySmr;
+            pcc.fullBodyMesh = fullBodyMesh;
+            pcc.firstPersonRightArmMesh = fpRightArmMesh;
             pcc.cameraRoot = cameraRoot;
             pcc.mainCamera = Camera.main;
             pcc.rightHandWeaponSocket = weaponSocket;
-            pcc.leftHandShieldSocket = shieldSocket;
-            pcc.leftHandShield = shieldObj;
-            pcc.shieldEquipped = true;
             pcc.firstPersonWeaponPivot = null;
             pcc.thirdPersonWeapons = tpWeapons;
             pcc.firstPersonWeapons = new GameObject[0];
-            pcc.thirdPersonCameraDistance = 2.6f;
-            pcc.thirdPersonShoulderOffset = new Vector3(0.45f, 0.25f, 0f);
+            pcc.thirdPersonCameraDistance = 2.4f;
+            pcc.thirdPersonShoulderOffset = new Vector3(0.12f, 0.08f, 0f);
+            pcc.thirdPersonTopClamp = 42.0f;
+            pcc.thirdPersonBottomClamp = -30.0f;
 
             var followCamObj = GameObject.Find("PlayerFollowCamera");
             if (followCamObj != null)
@@ -679,85 +917,45 @@ namespace StealthGame.Editor
                 {
                     followCam.CameraDistance = pcc.isThirdPersonView ? pcc.thirdPersonCameraDistance : 0f;
                     followCam.ShoulderOffset = pcc.isThirdPersonView ? pcc.thirdPersonShoulderOffset : Vector3.zero;
-                    followCam.VerticalArmLength = pcc.isThirdPersonView ? 0.25f : 0f;
+                    followCam.VerticalArmLength = pcc.isThirdPersonView ? 0.05f : 0f;
+                    followCam.CameraSide = 0.55f;
                     EditorUtility.SetDirty(followCam);
+                }
+
+                var vcam = followCamObj.GetComponent<CinemachineCamera>();
+                if (vcam != null)
+                {
+                    var lens = vcam.Lens;
+                    lens.FieldOfView = 55f;
+                    lens.NearClipPlane = 0.05f;
+                    vcam.Lens = lens;
+                    EditorUtility.SetDirty(vcam);
+                }
+
+                var perlin = followCamObj.GetComponent<CinemachineBasicMultiChannelPerlin>();
+                if (perlin != null)
+                {
+                    perlin.PivotOffset = Vector3.zero;
+                    perlin.AmplitudeGain = 0.10f;
+                    EditorUtility.SetDirty(perlin);
                 }
             }
 
             List<AudioClip> footsteps = new List<AudioClip>();
             for (int i = 1; i <= 10; i++)
             {
-                string clipPath = $"Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Footstep_{i:00}.wav";
+                string clipPath = $"Assets/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Footstep_{i:00}.wav";
                 var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(clipPath);
                 if (clip != null) footsteps.Add(clip);
             }
             pcc.footstepAudioClips = footsteps.ToArray();
             pcc.landingAudioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
-                "Assets/Prefabs/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Land.wav");
+                "Assets/Starter Assets/Runtime/ThirdPersonController/Character/Sfx/Player_Land.wav");
 
             pcc.ApplyCameraViewMode();
 
             EditorUtility.SetDirty(playerObj);
             EditorUtility.SetDirty(pcc);
-        }
-
-        private static GameObject InstantiateOffHandShield(Transform shieldSocket)
-        {
-            var shieldPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ShieldPrefabPath)
-                               ?? AssetDatabase.LoadAssetAtPath<GameObject>(FallbackShieldPrefabPath);
-            if (shieldPrefab == null) return null;
-
-            GameObject holder = new GameObject("Shield_OffHand");
-            holder.transform.SetParent(shieldSocket, false);
-            holder.transform.localPosition = Vector3.zero;
-            holder.transform.localRotation = Quaternion.identity;
-            holder.transform.localScale = Vector3.one;
-
-            GameObject meshObj = (GameObject)PrefabUtility.InstantiatePrefab(shieldPrefab, holder.transform);
-            if (PrefabUtility.IsPartOfPrefabInstance(meshObj))
-            {
-                PrefabUtility.UnpackPrefabInstance(meshObj, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
-            }
-
-            foreach (var t in holder.GetComponentsInChildren<Transform>(true))
-            {
-                GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
-                t.gameObject.isStatic = false;
-                t.gameObject.layer = 0;
-            }
-            foreach (var col in holder.GetComponentsInChildren<Collider>(true))
-            {
-                Object.DestroyImmediate(col);
-            }
-
-            var mf = meshObj.GetComponentInChildren<MeshFilter>();
-            if (mf != null && mf.sharedMesh != null)
-            {
-                Bounds b = mf.sharedMesh.bounds;
-                float maxDim = Mathf.Max(b.size.x, b.size.y, b.size.z);
-                float scale = maxDim > 0.001f ? (0.56f / maxDim) : 1f;
-                meshObj.transform.localScale = Vector3.one * scale;
-                meshObj.transform.localRotation = Quaternion.identity;
-                meshObj.transform.localPosition = -b.center * scale;
-            }
-
-            Material ironMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Metal_Iron.mat");
-            Material woodMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Wood_Polished.mat");
-
-            foreach (var r in holder.GetComponentsInChildren<Renderer>(true))
-            {
-                var mats = r.sharedMaterials;
-                for (int i = 0; i < mats.Length; i++)
-                {
-                    if (mats[i] == null || mats[i].shader == null || !mats[i].shader.name.StartsWith("Universal Render Pipeline"))
-                    {
-                        mats[i] = (i == 0 && woodMat != null) ? woodMat : (ironMat != null ? ironMat : EnsureUrpMaterial(mats[i]));
-                    }
-                }
-                r.sharedMaterials = mats;
-            }
-
-            return holder;
         }
 
         private static ModularHeroController ConfigureGanzSeModularParts(GameObject visualModelObj)
@@ -811,11 +1009,11 @@ namespace StealthGame.Editor
         private static GameObject[] InstantiateWeaponSet(Transform parentSocket, bool isFirstPerson)
         {
             GameObject[] result = new GameObject[3];
-            float[] targetWeaponLengths = new float[] { 0.88f, 1.25f, 0.78f }; // Sword, Spear, Axe length in meters
+            float[] targetWeaponLengths = new float[] { 0.88f, 1.30f, 0.80f }; // Sword, Spear, Axe length in meters
             float[] tipHeights = new float[] { 0.72f, 1.05f, 0.62f };
 
-            Material ironMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Metal_Iron.mat");
-            Material woodMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/BrokenVector/LowPolyDungeon/Materials/Wood_Polished.mat");
+            Material ironMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/BrokenVector/LowPolyDungeon/Materials/Metal_Iron.mat");
+            Material woodMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/BrokenVector/LowPolyDungeon/Materials/Wood_Polished.mat");
 
             for (int i = 0; i < 3; i++)
             {
@@ -870,7 +1068,6 @@ namespace StealthGame.Editor
                     Vector3 size = meshBounds.size;
                     float maxDim = Mathf.Max(size.x, size.y, size.z);
 
-                    // 1. Align longest axis with holder +Y (blade/shaft axis)
                     Quaternion alignRot = Quaternion.identity;
                     if (size.z >= size.x && size.z >= size.y)
                     {
@@ -886,7 +1083,6 @@ namespace StealthGame.Editor
                         alignRot = Quaternion.Euler(0f, 90f, 0f) * alignRot;
                     }
 
-                    // 2. Verify blade vs handle using submesh vertex positions so NO weapon can ever be upside down!
                     if (m.subMeshCount >= 2)
                     {
                         Vector3 avg0 = GetSubmeshVertexAverage(m, 0, alignRot, out float spanY0);
@@ -928,6 +1124,11 @@ namespace StealthGame.Editor
                         {
                             meshObj.transform.localPosition = -handleCenter * uniformScale;
                         }
+                        else if (i == 1)
+                        {
+                            Vector3 rotatedCenter = (alignRot * meshBounds.center) * uniformScale;
+                            meshObj.transform.localPosition = -rotatedCenter + new Vector3(0f, targetWeaponLengths[i] * 0.16f, 0f);
+                        }
                         else
                         {
                             Vector3 rotatedCenter = (alignRot * meshBounds.center) * uniformScale;
@@ -944,7 +1145,6 @@ namespace StealthGame.Editor
                     }
                 }
 
-                // Ensure valid URP materials (Iron on blade/head submesh, Wood on handle/shaft submesh)
                 foreach (var renderer in holder.GetComponentsInChildren<Renderer>(true))
                 {
                     var mats = renderer.sharedMaterials;
@@ -965,14 +1165,13 @@ namespace StealthGame.Editor
                     renderer.sharedMaterials = mats;
                 }
 
-                // Attach BladeTrail child for weapon swing trail rendering
                 var trailObj = new GameObject("BladeTrail");
                 trailObj.transform.SetParent(holder.transform, false);
                 trailObj.transform.localPosition = new Vector3(0f, tipHeights[i], 0f);
                 var trail = trailObj.AddComponent<TrailRenderer>();
                 trail.time = 0.16f;
                 trail.minVertexDistance = 0.02f;
-                trail.startWidth = 0.14f;
+                trail.startWidth = 0.12f;
                 trail.endWidth = 0.0f;
                 trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 trail.receiveShadows = false;
@@ -1053,21 +1252,31 @@ namespace StealthGame.Editor
 
             var newMat = new Material(urpShader) { name = safeName + "_URP" };
             Texture mainTex = mat.HasProperty("_BaseMap") ? mat.GetTexture("_BaseMap") :
-                              (mat.HasProperty("_MainTex") ? mat.GetTexture("_MainTex") : null);
+                              (mat.HasProperty("_Texture") ? mat.GetTexture("_Texture") :
+                              (mat.HasProperty("_MainTex") ? mat.GetTexture("_MainTex") : null));
             Color baseCol = mat.HasProperty("_BaseColor") ? mat.GetColor("_BaseColor") :
                             (mat.HasProperty("_Color") ? mat.GetColor("_Color") : Color.white);
 
             if (mainTex != null) newMat.SetTexture("_BaseMap", mainTex);
             newMat.SetColor("_BaseColor", baseCol);
-            newMat.SetFloat("_Smoothness", 0.3f);
+            newMat.SetFloat("_Smoothness", 0.1f);
 
             AssetDatabase.CreateAsset(newMat, urpMatPath);
             return newMat;
         }
 
-        private static void ImportCustomHumanoidFbxFolder()
+        private static void ImportMixamoHumanoidFbxFolder()
         {
             if (!Directory.Exists(SourceAnimFolder)) return;
+
+            string[] loopingFiles = new[]
+            {
+                "Breathing_Idle",
+                "Walking",
+                "Running",
+                "Crouch_Idle",
+                "Crouched_Walking"
+            };
 
             foreach (string fbxPath in Directory.GetFiles(SourceAnimFolder, "*.fbx"))
             {
@@ -1075,17 +1284,54 @@ namespace StealthGame.Editor
                 var importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
                 if (importer == null) continue;
 
+                string baseName = Path.GetFileNameWithoutExtension(assetPath);
+                bool shouldLoop = loopingFiles.Any(l => baseName.IndexOf(l, System.StringComparison.OrdinalIgnoreCase) >= 0);
+
                 bool needsReimport = false;
                 if (importer.animationType != ModelImporterAnimationType.Human)
                 {
                     importer.animationType = ModelImporterAnimationType.Human;
                     importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                    importer.SaveAndReimport();
+                }
+
+                var clips = importer.clipAnimations;
+                if (clips == null || clips.Length == 0)
+                {
+                    clips = importer.defaultClipAnimations;
                     needsReimport = true;
                 }
 
-                if (needsReimport)
+                if (clips != null && clips.Length > 0)
                 {
-                    importer.SaveAndReimport();
+                    for (int i = 0; i < clips.Length; i++)
+                    {
+                        if (clips[i].loopTime != shouldLoop ||
+                            clips[i].loopPose != shouldLoop ||
+                            !clips[i].lockRootRotation ||
+                            !clips[i].lockRootHeightY ||
+                            !clips[i].lockRootPositionXZ ||
+                            clips[i].keepOriginalOrientation ||
+                            clips[i].keepOriginalPositionY ||
+                            clips[i].keepOriginalPositionXZ)
+                        {
+                            clips[i].name = baseName;
+                            clips[i].loopTime = shouldLoop;
+                            clips[i].loopPose = shouldLoop;
+                            clips[i].lockRootRotation = true;
+                            clips[i].lockRootHeightY = true;
+                            clips[i].lockRootPositionXZ = true;
+                            clips[i].keepOriginalOrientation = false;
+                            clips[i].keepOriginalPositionY = false;
+                            clips[i].keepOriginalPositionXZ = false;
+                            needsReimport = true;
+                        }
+                    }
+                    if (needsReimport)
+                    {
+                        importer.clipAnimations = clips;
+                        importer.SaveAndReimport();
+                    }
                 }
             }
         }
@@ -1110,29 +1356,6 @@ namespace StealthGame.Editor
             var settings = AnimationUtility.GetAnimationClipSettings(clip);
             settings.loopTime = true;
             AnimationUtility.SetAnimationClipSettings(clip, settings);
-
-            if (isNew) AssetDatabase.CreateAsset(clip, path);
-            else EditorUtility.SetDirty(clip);
-            return clip;
-        }
-
-        private static AnimationClip CreateOrUpdateAttackClip(string path, int comboStep)
-        {
-            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
-            bool isNew = false;
-            if (clip == null)
-            {
-                clip = new AnimationClip { name = Path.GetFileNameWithoutExtension(path) };
-                isNew = true;
-            }
-            clip.ClearCurves();
-
-            float duration = comboStep == 3 ? 0.55f : 0.38f;
-            var yawCurve = new AnimationCurve(
-                new Keyframe(0f, 0f),
-                new Keyframe(duration * 0.5f, -45f),
-                new Keyframe(duration, 0f));
-            clip.SetCurve("", typeof(Transform), "localEulerAngles.y", yawCurve);
 
             if (isNew) AssetDatabase.CreateAsset(clip, path);
             else EditorUtility.SetDirty(clip);

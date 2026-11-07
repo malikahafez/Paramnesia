@@ -10,12 +10,10 @@ using UnityEngine.InputSystem;
 namespace StealthGame.Player
 {
     /// <summary>
-    /// Controls the 3D Player Character (GanzSe Modular Character), Kevin Iglesias Humanoid Animations
-    /// (8-Direction Walk/Run/Sprint 2D BlendTree, Jump, Fall, Land, Crouch, 3-Hit Melee Attack Combos,
-    /// Right-Click Shield Block/Timed Parry, Combat Dodge/Sidestep Dash, Stealth Backstab Finisher,
-    /// Hit-Stop & Camera Shake), equipped melee weapons (1 = Sword, 2 = Spear/Polearm, 3 = Battle Axe)
-    /// with weapon swing trails, off-hand Shield (G to toggle, RMB to block/parry), visible First-Person
-    /// armored hands & forearms, modular armor customization (M key), and 1st/3rd-Person camera toggle (V key).
+    /// Controls the 3D Player Character, Mixamo Humanoid Animations (Idle, Walk, Run, Jump, Crouch Idle,
+    /// Crouch Walk, and Weapon-Specific Melee Attacks for Sword, Spear, and Axe), Attack Cooldown & Input
+    /// Buffer to prevent spam, Weapon Placement in the Right Hand, and 1st/3rd-Person Camera Positioning
+    /// with Pan & Tilt clamping.
     /// </summary>
     [DisallowMultipleComponent]
     public class PlayerCharacterController : MonoBehaviour
@@ -41,57 +39,59 @@ namespace StealthGame.Player
         public Camera mainCamera;
         public CinemachineThirdPersonFollow followCameraComponent;
 
-        [Header("Player Health & Stamina")]
+        [Header("Player Health")]
         public int maxHealth = 100;
         public int currentHealth = 100;
-        public float maxStamina = 100f;
-        public float currentStamina = 100f;
-        public float staminaRegenRate = 22f;
 
-        [Header("Weapons (1 = Sword, 2 = Spear, 3 = Axe) & Off-Hand Shield")]
+        [Header("Weapons (1 = Sword, 2 = Spear, 3 = Axe)")]
         public WeaponType equippedWeapon = WeaponType.Sword;
         [Tooltip("Weapon socket attached to the 3D humanoid's right hand palm.")]
         public Transform rightHandWeaponSocket;
         [Tooltip("Weapons attached to the character's right hand (used in both 1st-person and 3rd-person).")]
         public GameObject[] thirdPersonWeapons = new GameObject[3];
-        [Tooltip("Shield socket attached to the 3D humanoid's left forearm/hand.")]
-        public Transform leftHandShieldSocket;
-        [Tooltip("Off-hand shield attached to the left hand (toggle with G, hold RMB to block).")]
-        public GameObject leftHandShield;
-        public bool shieldEquipped = true;
         [Tooltip("Legacy FP weapon array (kept disabled so the real hand-held weapon is used).")]
         public GameObject[] firstPersonWeapons = new GameObject[3];
         public Transform firstPersonWeaponPivot;
 
-        [Header("Movement, Crouch & Combat Dash Settings")]
+        [Header("First-Person & Third-Person Character Meshes")]
+        public SkinnedMeshRenderer bodySkinnedMeshRenderer;
+        public Mesh fullBodyMesh;
+        public Mesh firstPersonRightArmMesh;
+
+        [Header("Movement & Crouch Settings (Walk, Run, Jump, Crouch)")]
         public float normalWalkSpeed = 4.0f;
-        public float normalSprintSpeed = 6.5f;
+        public float normalSprintSpeed = 6.0f;
         public float crouchMoveSpeed = 2.2f;
-        public float blockMoveSpeed = 2.5f;
-        public float dashSpeed = 11.5f;
-        public float dashDuration = 0.24f;
-        public float dashCooldown = 0.55f;
-        public float dashStaminaCost = 25f;
         public float standingHeight = 2.0f;
         public float crouchingHeight = 1.2f;
-        public float standingCameraY = 1.375f;
-        public float crouchingCameraY = 0.75f;
+        public float standingCameraY = 1.50f;
+        public float crouchingCameraY = 0.90f;
         public float crouchTransitionSpeed = 10.0f;
         public Vector3 standingDetectionOffset = new Vector3(0f, 1.0f, 0f);
         public Vector3 crouchingDetectionOffset = new Vector3(0f, 0.45f, 0f);
 
-        [Header("Melee Combat, 3-Hit Combo, Backstab & Parry")]
-        public float attackRange = 2.8f;
-        public float attackRadius = 1.05f;
-        public float comboResetTime = 1.4f;
-        public float perfectParryWindow = 0.35f;
-        public int[] comboBaseDamage = new int[] { 25, 35, 50 };
+        [Header("Melee Combat & Attack Spam Buffer")]
+        public float swordAttackRange = 2.6f;
+        public float spearAttackRange = 3.5f;
+        public float axeAttackRange = 2.7f;
+        public float attackRadius = 1.0f;
+        public int swordDamage = 25;
+        public int spearDamage = 32;
+        public int axeDamage = 45;
+        [Tooltip("Minimum recovery pause after an attack finishes before the next attack can start (prevents spam).")]
+        public float attackCooldownBuffer = 0.35f;
+        [Tooltip("If the player presses attack slightly before cooldown ends, buffer 1 attack within this window.")]
+        public float attackInputBufferWindow = 0.22f;
         public LayerMask enemyHitLayers = ~0;
 
-        [Header("Camera View Mode (Press V to Toggle 1st/3rd Person)")]
+        [Header("Camera View Mode & Pan/Tilt Limits (Press V to Toggle)")]
         public bool isThirdPersonView = false;
-        public float thirdPersonCameraDistance = 2.6f;
-        public Vector3 thirdPersonShoulderOffset = new Vector3(0.45f, 0.25f, 0f);
+        public float thirdPersonCameraDistance = 2.4f;
+        public Vector3 thirdPersonShoulderOffset = new Vector3(0.12f, 0.08f, 0f);
+        public float firstPersonTopClamp = 70.0f;
+        public float firstPersonBottomClamp = -65.0f;
+        public float thirdPersonTopClamp = 42.0f;
+        public float thirdPersonBottomClamp = -30.0f;
         public bool showWeaponHud = true;
 
         [Header("Audio")]
@@ -102,9 +102,6 @@ namespace StealthGame.Player
         // Runtime State
         public bool IsCrouching { get; private set; }
         public bool IsAttacking { get; private set; }
-        public bool IsBlocking { get; private set; }
-        public bool IsDashing { get; private set; }
-        public int CurrentComboStep { get; private set; }
         public string LastHitMessage { get; private set; } = "";
         private float _lastHitMessageTime;
 
@@ -114,40 +111,37 @@ namespace StealthGame.Player
         private float _currentHeight;
         private float _currentCameraY;
         private float _crouchWeight;
-        private float _blockWeight;
         private float _attackTimer;
         private float _attackDuration;
-        private float _lastAttackEndTime;
-        private float _lastBlockPressTime = -999f;
-
-        // Combat Dash & Hit-Stop / Camera Shake Runtime State
-        private float _dashTimer;
-        private float _dashCooldownTimer;
-        private Vector3 _dashWorldDir;
-        private float _dashRollSide;
-        private float _currentDashRollAngle;
-        private float _hitStopTimer;
-        private float _camShakeTimer;
-        private float _camShakeDuration;
-        private float _camShakeIntensity;
+        private float _attackCooldownTimer;
+        private float _bufferedAttackTimer;
+        private bool _hasTriggeredHitThisSwing;
         private float _damageFlashTimer;
-        private bool _canBackstabPrompt;
-
         private bool _wasGrounded = true;
         private float _stepCycleTimer;
-        private float _modelYawOffset;
 
         private readonly TrailRenderer[] _weaponTrails = new TrailRenderer[3];
         private static Material _sharedTrailMaterial;
         private static Texture2D _hudBarTex;
 
-        // First-Person right-hand grip pose (positions both the hand and the upright blade in view)
-        private readonly Vector3 _fpGripBaseLocalPos = new Vector3(0.24f, -0.23f, 0.50f);
-        private readonly Quaternion _fpGripBaseLocalRot = Quaternion.Euler(14f, -18f, 8f);
+        // First-Person right-hand weapon ready poses per weapon type (Sword, Spear, Axe)
+        private readonly Vector3 _fpSwordBaseLocalPos = new Vector3(0.24f, -0.22f, 0.46f);
+        private readonly Quaternion _fpSwordBaseLocalRot = Quaternion.Euler(14f, -14f, 8f);
 
-        // First-Person left-hand guard pose (visible in lower-left of screen)
-        private readonly Vector3 _fpLeftHandBaseLocalPos = new Vector3(-0.22f, -0.27f, 0.42f);
-        private readonly Quaternion _fpLeftHandBaseLocalRot = Quaternion.Euler(25f, 28f, -15f);
+        private readonly Vector3 _fpSpearBaseLocalPos = new Vector3(0.26f, -0.24f, 0.50f);
+        private readonly Quaternion _fpSpearBaseLocalRot = Quaternion.Euler(22f, -12f, 6f);
+
+        private readonly Vector3 _fpAxeBaseLocalPos = new Vector3(0.25f, -0.22f, 0.45f);
+        private readonly Quaternion _fpAxeBaseLocalRot = Quaternion.Euler(16f, -18f, 10f);
+
+        // First-Person procedural bob & look sway state
+        private float _fpBobBlend;
+        private float _fpBobPhase;
+        private Vector3 _fpSwayOffset;
+        private Vector3 _fpSwayAngles;
+        private float _lastCamYaw;
+        private float _lastCamPitch;
+        private bool _camAnglesInitialized;
 
         // Animator parameter hashes
         private int _animIDSpeed;
@@ -158,11 +152,9 @@ namespace StealthGame.Player
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
         private int _animIDIsCrouching;
-        private int _animIDIsBlocking;
-        private int _animIDComboStep;
         private int _animIDWeaponType;
         private int _animIDAttack;
-        private int _animIDParry;
+        private int _animIDFullBodyAttack;
         private int _animIDHit;
 
         // Cached humanoid bones
@@ -185,7 +177,6 @@ namespace StealthGame.Player
         private readonly List<Transform> _rightFingerBones = new List<Transform>();
         private readonly List<Transform> _rightThumbBones = new List<Transform>();
         private readonly List<Transform> _leftFingerBones = new List<Transform>();
-        private readonly List<Transform> _leftThumbBones = new List<Transform>();
 
         private void Awake()
         {
@@ -218,23 +209,19 @@ namespace StealthGame.Player
         private void Start()
         {
             currentHealth = maxHealth;
-            currentStamina = maxStamina;
             _currentHeight = standingHeight;
-            _currentCameraY = cameraRoot != null ? cameraRoot.localPosition.y : standingCameraY;
+            _currentCameraY = standingCameraY;
 
             if (mainCamera != null && mainCamera.nearClipPlane > 0.05f)
             {
                 mainCamera.nearClipPlane = 0.04f;
             }
 
+            RemoveAnyLeftoverShield();
             ClearStaticAndColliders(firstPersonWeapons);
             ClearStaticAndColliders(thirdPersonWeapons);
-            if (leftHandShield != null)
-            {
-                ClearStaticAndColliders(new[] { leftHandShield });
-            }
-
-            EnsureRuntimeWeaponOrientation();
+            EnsureFirstPersonArmMeshReady();
+            EnsureRuntimeWeaponPlacement();
             EnsureWeaponSwingTrails();
             EnsureSceneEnemiesHaveCombatTargets();
 
@@ -244,8 +231,180 @@ namespace StealthGame.Player
             }
 
             EquipWeapon(equippedWeapon);
-            UpdateShieldVisibility();
             ApplyCameraViewMode();
+        }
+
+        private void EnsureFirstPersonArmMeshReady()
+        {
+#if UNITY_EDITOR
+            if (characterModelRoot != null)
+            {
+                Material urpBodyMat = null;
+                foreach (var smr in characterModelRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                {
+                    if (smr != null && smr.gameObject.activeInHierarchy && smr.sharedMaterial != null)
+                    {
+                        urpBodyMat = smr.sharedMaterial;
+                        break;
+                    }
+                }
+
+                foreach (var mf in characterModelRoot.GetComponentsInChildren<MeshFilter>(true))
+                {
+                    if (mf == null) continue;
+                    if (rightHandWeaponSocket != null && mf.transform.IsChildOf(rightHandWeaponSocket)) continue;
+
+                    mf.gameObject.SetActive(true);
+                    if (mf.sharedMesh == null)
+                    {
+                        string attachPath = $"Assets/PolygonApocalypse/Models/{mf.gameObject.name}.fbx";
+                        Mesh loadedMesh = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh>(attachPath);
+                        if (loadedMesh != null)
+                        {
+                            mf.sharedMesh = loadedMesh;
+                        }
+                    }
+
+                    var mr = mf.GetComponent<MeshRenderer>();
+                    if (mr != null && urpBodyMat != null && (mr.sharedMaterial == null || mr.sharedMaterial.shader == null || !mr.sharedMaterial.shader.name.StartsWith("Universal Render Pipeline")))
+                    {
+                        mr.sharedMaterial = urpBodyMat;
+                    }
+                }
+            }
+#endif
+            if (bodySkinnedMeshRenderer == null && characterModelRoot != null)
+            {
+                foreach (var smr in characterModelRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                {
+                    if (smr != null && smr.gameObject.activeInHierarchy && smr.sharedMesh != null)
+                    {
+                        bodySkinnedMeshRenderer = smr;
+                        break;
+                    }
+                }
+            }
+
+            if (bodySkinnedMeshRenderer != null)
+            {
+                if (fullBodyMesh == null && bodySkinnedMeshRenderer.sharedMesh != null && !bodySkinnedMeshRenderer.sharedMesh.name.EndsWith("_FPArm"))
+                {
+                    fullBodyMesh = bodySkinnedMeshRenderer.sharedMesh;
+                }
+
+                if (firstPersonRightArmMesh == null && fullBodyMesh != null && _rightLowerArmBone != null)
+                {
+                    firstPersonRightArmMesh = BuildFirstPersonRightArmMesh(bodySkinnedMeshRenderer, fullBodyMesh, _rightLowerArmBone);
+                }
+            }
+        }
+
+        public static Mesh BuildFirstPersonRightArmMesh(SkinnedMeshRenderer bodySmr, Mesh sourceMesh, Transform rightLowerArmBone)
+        {
+            if (bodySmr == null || sourceMesh == null || rightLowerArmBone == null || !sourceMesh.isReadable)
+                return null;
+
+            Transform[] bones = bodySmr.bones;
+            if (bones == null || bones.Length == 0)
+                return null;
+
+            int elbowBoneIdx = System.Array.IndexOf(bones, rightLowerArmBone);
+            if (elbowBoneIdx < 0)
+                return null;
+
+            HashSet<int> rightForearmAndHandBoneIndices = new HashSet<int>();
+            for (int i = 0; i < bones.Length; i++)
+            {
+                if (bones[i] != null && (bones[i] == rightLowerArmBone || bones[i].IsChildOf(rightLowerArmBone)))
+                {
+                    rightForearmAndHandBoneIndices.Add(i);
+                }
+            }
+
+            BoneWeight[] srcWeights = sourceMesh.boneWeights;
+            if (srcWeights == null || srcWeights.Length != sourceMesh.vertexCount)
+                return null;
+
+            bool[] keepVertex = new bool[srcWeights.Length];
+            BoneWeight[] remappedWeights = new BoneWeight[srcWeights.Length];
+
+            for (int v = 0; v < srcWeights.Length; v++)
+            {
+                BoneWeight bw = srcWeights[v];
+                float forearmWeight = 0f;
+                if (rightForearmAndHandBoneIndices.Contains(bw.boneIndex0)) forearmWeight += bw.weight0;
+                if (rightForearmAndHandBoneIndices.Contains(bw.boneIndex1)) forearmWeight += bw.weight1;
+                if (rightForearmAndHandBoneIndices.Contains(bw.boneIndex2)) forearmWeight += bw.weight2;
+                if (rightForearmAndHandBoneIndices.Contains(bw.boneIndex3)) forearmWeight += bw.weight3;
+
+                if (forearmWeight >= 0.45f)
+                {
+                    keepVertex[v] = true;
+                    // Reassign any upper-arm blend weight at the elbow crease to the elbow bone so 0% is anchored to the torso/shoulder
+                    if (bw.weight0 > 0f && !rightForearmAndHandBoneIndices.Contains(bw.boneIndex0)) bw.boneIndex0 = elbowBoneIdx;
+                    if (bw.weight1 > 0f && !rightForearmAndHandBoneIndices.Contains(bw.boneIndex1)) bw.boneIndex1 = elbowBoneIdx;
+                    if (bw.weight2 > 0f && !rightForearmAndHandBoneIndices.Contains(bw.boneIndex2)) bw.boneIndex2 = elbowBoneIdx;
+                    if (bw.weight3 > 0f && !rightForearmAndHandBoneIndices.Contains(bw.boneIndex3)) bw.boneIndex3 = elbowBoneIdx;
+                }
+                remappedWeights[v] = bw;
+            }
+
+            Mesh fpMesh = Object.Instantiate(sourceMesh);
+            fpMesh.name = sourceMesh.name + "_FPArm";
+            fpMesh.boneWeights = remappedWeights;
+
+            int subMeshCount = sourceMesh.subMeshCount;
+            int totalKeptTris = 0;
+            for (int s = 0; s < subMeshCount; s++)
+            {
+                int[] tris = sourceMesh.GetTriangles(s);
+                List<int> keptTris = new List<int>(tris.Length / 4);
+                for (int t = 0; t + 2 < tris.Length; t += 3)
+                {
+                    int i0 = tris[t];
+                    int i1 = tris[t + 1];
+                    int i2 = tris[t + 2];
+                    if (keepVertex[i0] && keepVertex[i1] && keepVertex[i2])
+                    {
+                        keptTris.Add(i0);
+                        keptTris.Add(i1);
+                        keptTris.Add(i2);
+                    }
+                }
+                totalKeptTris += keptTris.Count;
+                fpMesh.SetTriangles(keptTris, s);
+            }
+
+            if (totalKeptTris == 0)
+            {
+                Object.DestroyImmediate(fpMesh);
+                return null;
+            }
+
+            fpMesh.RecalculateBounds();
+            return fpMesh;
+        }
+
+        private void RemoveAnyLeftoverShield()
+        {
+            if (_leftHandBone != null)
+            {
+                Transform oldShieldSocket = _leftHandBone.Find("ShieldSocket_TP");
+                if (oldShieldSocket != null)
+                {
+                    Destroy(oldShieldSocket.gameObject);
+                }
+            }
+            if (characterModelRoot != null)
+            {
+                foreach (var t in characterModelRoot.GetComponentsInChildren<Transform>(true))
+                {
+                    if (t != null && (t.name == "ShieldSocket_TP" || t.name == "Shield_OffHand"))
+                    {
+                        Destroy(t.gameObject);
+                    }
+                }
+            }
         }
 
         private static void EnsureSceneEnemiesHaveCombatTargets()
@@ -260,29 +419,20 @@ namespace StealthGame.Player
             }
         }
 
-        private void EnsureRuntimeWeaponOrientation()
+        private void EnsureRuntimeWeaponPlacement()
         {
             if (rightHandWeaponSocket == null && _rightHandBone != null)
             {
                 rightHandWeaponSocket = _rightHandBone.Find("WeaponSocket_TP");
             }
-            if (rightHandWeaponSocket != null)
-            {
-                rightHandWeaponSocket.localPosition = new Vector3(-0.038f, 0.082f, 0.01f);
-                rightHandWeaponSocket.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.forward);
-            }
 
-            if (leftHandShieldSocket == null && _leftHandBone != null)
+            if (rightHandWeaponSocket != null && _rightHandBone != null)
             {
-                leftHandShieldSocket = _leftHandBone.Find("ShieldSocket_TP");
-            }
-            if (leftHandShield == null && leftHandShieldSocket != null && leftHandShieldSocket.childCount > 0)
-            {
-                leftHandShield = leftHandShieldSocket.GetChild(0).gameObject;
+                ConfigureWeaponSocketForHandBone(rightHandWeaponSocket, _rightHandBone, characterAnimator);
             }
 
             if (thirdPersonWeapons == null) return;
-            float[] targetLengths = new float[] { 0.88f, 1.25f, 0.78f };
+            float[] targetLengths = new float[] { 0.88f, 1.30f, 0.80f }; // Sword, Spear, Axe
 
             for (int i = 0; i < thirdPersonWeapons.Length && i < 3; i++)
             {
@@ -331,10 +481,57 @@ namespace StealthGame.Player
                     meshObj.localScale = Vector3.one * uniformScale;
                     if (i == 0)
                         meshObj.localPosition = -handleCenter * uniformScale;
+                    else if (i == 1)
+                        meshObj.localPosition = -(alignRot * m.bounds.center) * uniformScale + new Vector3(0f, targetLengths[i] * 0.16f, 0f);
                     else
                         meshObj.localPosition = -(alignRot * m.bounds.center) * uniformScale + new Vector3(0f, targetLengths[i] * 0.22f, 0f);
                 }
             }
+        }
+
+        public static void ConfigureWeaponSocketForHandBone(Transform weaponSocket, Transform rightHand, Animator animator)
+        {
+            if (weaponSocket == null || rightHand == null) return;
+
+            // Detect wrist-to-knuckles axis and pinky/middle-to-index axis automatically for any humanoid rig (Synty 3-finger or GanzSe 5-finger)
+            Transform middleProximal = animator != null && animator.isHuman
+                ? animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal)
+                : null;
+            Transform indexProximal = animator != null && animator.isHuman
+                ? animator.GetBoneTransform(HumanBodyBones.RightIndexProximal)
+                : null;
+            Transform pinkyProximal = animator != null && animator.isHuman
+                ? animator.GetBoneTransform(HumanBodyBones.RightLittleProximal)
+                : null;
+
+            if (indexProximal == null)
+                indexProximal = rightHand.Find("IndexFinger_01 1") ?? rightHand.Find("IndexFinger_01");
+            if (middleProximal == null)
+                middleProximal = rightHand.Find("Finger_01 1") ?? rightHand.Find("Finger_01");
+
+            Transform knuckleRef = middleProximal ?? indexProximal;
+            Vector3 wristToKnuckles = (knuckleRef != null && knuckleRef.parent == rightHand && knuckleRef.localPosition.sqrMagnitude > 0.0001f)
+                ? knuckleRef.localPosition.normalized
+                : Vector3.right;
+
+            Vector3 pinkyToIndex = Vector3.back;
+            Transform outerFingerRef = pinkyProximal ?? middleProximal;
+            if (indexProximal != null && outerFingerRef != null && indexProximal.parent == rightHand && outerFingerRef.parent == rightHand)
+            {
+                Vector3 diff = indexProximal.localPosition - outerFingerRef.localPosition;
+                Vector3 projected = Vector3.ProjectOnPlane(diff, wristToKnuckles);
+                if (projected.sqrMagnitude > 0.00001f)
+                    pinkyToIndex = projected.normalized;
+            }
+
+            Vector3 palmInward = -Vector3.Cross(wristToKnuckles, pinkyToIndex).normalized;
+            float handLength = (knuckleRef != null && knuckleRef.parent == rightHand)
+                ? knuckleRef.localPosition.magnitude
+                : 0.10f;
+
+            // Position handle right inside the closed palm and point blade out the top of the fist (pinkyToIndex) with a natural 26-degree ergonomic wrist tilt
+            weaponSocket.localPosition = wristToKnuckles * (handLength * 0.78f) + palmInward * 0.032f + pinkyToIndex * 0.008f;
+            weaponSocket.localRotation = Quaternion.LookRotation(wristToKnuckles, pinkyToIndex) * Quaternion.Euler(26f, 0f, 0f);
         }
 
         private void EnsureWeaponSwingTrails()
@@ -375,7 +572,7 @@ namespace StealthGame.Player
 
                 trail.time = 0.16f;
                 trail.minVertexDistance = 0.02f;
-                trail.startWidth = 0.14f;
+                trail.startWidth = 0.12f;
                 trail.endWidth = 0.0f;
                 trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 trail.receiveShadows = false;
@@ -393,7 +590,7 @@ namespace StealthGame.Player
                     },
                     new[]
                     {
-                        new GradientAlphaKey(0.80f, 0f),
+                        new GradientAlphaKey(0.75f, 0f),
                         new GradientAlphaKey(0.0f, 1f)
                     });
                 trail.colorGradient = grad;
@@ -429,11 +626,9 @@ namespace StealthGame.Player
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDIsCrouching = Animator.StringToHash("IsCrouching");
-            _animIDIsBlocking = Animator.StringToHash("IsBlocking");
-            _animIDComboStep = Animator.StringToHash("ComboStep");
             _animIDWeaponType = Animator.StringToHash("WeaponType");
             _animIDAttack = Animator.StringToHash("Attack");
-            _animIDParry = Animator.StringToHash("Parry");
+            _animIDFullBodyAttack = Animator.StringToHash("FullBodyAttack");
             _animIDHit = Animator.StringToHash("Hit");
         }
 
@@ -464,10 +659,6 @@ namespace StealthGame.Player
             {
                 rightHandWeaponSocket = _rightHandBone.Find("WeaponSocket_TP");
             }
-            if (leftHandShieldSocket == null && _leftHandBone != null)
-            {
-                leftHandShieldSocket = _leftHandBone.Find("ShieldSocket_TP");
-            }
 
             CacheFingerBones();
         }
@@ -477,7 +668,6 @@ namespace StealthGame.Player
             _rightFingerBones.Clear();
             _rightThumbBones.Clear();
             _leftFingerBones.Clear();
-            _leftThumbBones.Clear();
 
             HumanBodyBones[] rFingers = new HumanBodyBones[]
             {
@@ -514,28 +704,22 @@ namespace StealthGame.Player
                 var t = characterAnimator.GetBoneTransform(b);
                 if (t != null) _leftFingerBones.Add(t);
             }
-
-            HumanBodyBones[] lThumbs = new HumanBodyBones[]
-            {
-                HumanBodyBones.LeftThumbProximal, HumanBodyBones.LeftThumbIntermediate, HumanBodyBones.LeftThumbDistal
-            };
-            foreach (var b in lThumbs)
-            {
-                var t = characterAnimator.GetBoneTransform(b);
-                if (t != null) _leftThumbBones.Add(t);
-            }
         }
 
         private void Update()
         {
-            UpdateHitStopAndTimers();
-            HandleViewAndArmorInput();
+            if (_animIDSpeed == 0) AssignAnimatorHashes();
+            if (_hipsBone == null) CacheHumanoidBones();
+
+            if (_damageFlashTimer > 0f)
+            {
+                _damageFlashTimer -= Time.deltaTime;
+            }
+
+            HandleCameraViewToggleInput();
             HandleWeaponSwitchInput();
-            HandleDashInputAndMovement();
-            HandleBlockAndShieldInput();
             HandleCrouchInput();
-            CheckStealthBackstabOpportunity();
-            HandleMeleeAttackInput();
+            HandleMeleeAttackWithBuffer();
             UpdateWeaponTrailState();
             UpdateLocomotionAndAnimator();
             UpdateFootstepAudio();
@@ -543,84 +727,9 @@ namespace StealthGame.Player
 
         private void LateUpdate()
         {
-            ApplyCameraShakeAndDashRollOffset();
-            ApplyProceduralCrouchBlockAndFingerGrip();
+            if (_hipsBone == null) CacheHumanoidBones();
+            ApplyProceduralModelAndFingerGrip();
             UpdateFirstPersonArmsAndWeaponPose();
-        }
-
-        private void UpdateHitStopAndTimers()
-        {
-            if (_hitStopTimer > 0f)
-            {
-                _hitStopTimer -= Time.unscaledDeltaTime;
-                if (characterAnimator != null)
-                {
-                    characterAnimator.speed = _hitStopTimer > 0f ? 0.06f : 1.0f;
-                }
-            }
-            else if (characterAnimator != null && characterAnimator.speed < 0.99f)
-            {
-                characterAnimator.speed = 1.0f;
-            }
-
-            if (_camShakeTimer > 0f)
-            {
-                _camShakeTimer -= Time.deltaTime;
-            }
-
-            if (_damageFlashTimer > 0f)
-            {
-                _damageFlashTimer -= Time.deltaTime;
-            }
-
-            if (!IsDashing && !IsAttacking)
-            {
-                float regen = IsBlocking ? staminaRegenRate * 0.45f : staminaRegenRate;
-                currentStamina = Mathf.Min(maxStamina, currentStamina + regen * Time.deltaTime);
-            }
-        }
-
-        public void TriggerHitStop(float durationSeconds = 0.048f)
-        {
-            _hitStopTimer = Mathf.Max(_hitStopTimer, durationSeconds);
-            if (characterAnimator != null)
-            {
-                characterAnimator.speed = 0.06f;
-            }
-        }
-
-        public void TriggerCameraShake(float intensity = 0.04f, float duration = 0.16f)
-        {
-            _camShakeIntensity = Mathf.Max(_camShakeIntensity * (_camShakeTimer / Mathf.Max(0.01f, _camShakeDuration)), intensity);
-            _camShakeDuration = duration;
-            _camShakeTimer = duration;
-        }
-
-        private void ApplyCameraShakeAndDashRollOffset()
-        {
-            if (cameraRoot == null) return;
-
-            float targetRoll = IsDashing ? (-_dashRollSide * 5.0f) : 0f;
-            _currentDashRollAngle = Mathf.Lerp(_currentDashRollAngle, targetRoll, Time.deltaTime * 16f);
-
-            Vector3 shakeOffset = Vector3.zero;
-            float shakePitch = 0f;
-            float shakeYaw = 0f;
-            if (_camShakeTimer > 0f)
-            {
-                float decay = Mathf.Clamp01(_camShakeTimer / Mathf.Max(0.01f, _camShakeDuration));
-                float amp = _camShakeIntensity * decay;
-                shakeOffset = new Vector3(
-                    Mathf.Sin(Time.time * 68f) * amp,
-                    Mathf.Cos(Time.time * 57f) * amp,
-                    0f);
-                shakePitch = Mathf.Sin(Time.time * 62f) * amp * 28f;
-                shakeYaw = Mathf.Cos(Time.time * 51f) * amp * 24f;
-            }
-
-            cameraRoot.localPosition = new Vector3(shakeOffset.x, _currentCameraY + shakeOffset.y, 0f);
-            Vector3 currentEuler = cameraRoot.localEulerAngles;
-            cameraRoot.localRotation = Quaternion.Euler(currentEuler.x + shakePitch, currentEuler.y + shakeYaw, _currentDashRollAngle);
         }
 
         private static bool WasKeyPressed(KeyCode legacyKey
@@ -646,181 +755,7 @@ namespace StealthGame.Player
             return false;
         }
 
-        private static bool WasDashPressed()
-        {
-            // if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.E)) return true;
-            if (Input.GetKeyDown(KeyCode.LeftAlt)) return true;
-
-#if ENABLE_INPUT_SYSTEM
-            // if (Keyboard.current != null && (Keyboard.current.leftAltKey.wasPressedThisFrame || Keyboard.current.eKey.wasPressedThisFrame))
-            if (Keyboard.current != null && (Keyboard.current.leftAltKey.wasPressedThisFrame))
-
-                return true;
-#endif
-            return false;
-        }
-
-        private static bool IsBlockHeld()
-        {
-            if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.Q)) return true;
-#if ENABLE_INPUT_SYSTEM
-            if (Mouse.current != null && Mouse.current.rightButton.isPressed) return true;
-            if (Keyboard.current != null && Keyboard.current.qKey.isPressed) return true;
-#endif
-            return false;
-        }
-
-        private static bool WasBlockPressedThisFrame()
-        {
-            if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) return true;
-#if ENABLE_INPUT_SYSTEM
-            if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame) return true;
-            if (Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame) return true;
-#endif
-            return false;
-        }
-
-        private void HandleDashInputAndMovement()
-        {
-            if (_dashCooldownTimer > 0f)
-            {
-                _dashCooldownTimer -= Time.deltaTime;
-            }
-
-            if (IsDashing)
-            {
-                _dashTimer -= Time.deltaTime;
-                if (characterController != null)
-                {
-                    characterController.Move(_dashWorldDir * (dashSpeed * Time.deltaTime));
-                }
-
-                if (_dashTimer <= 0f)
-                {
-                    IsDashing = false;
-                }
-                return;
-            }
-
-            if (WasDashPressed() && _dashCooldownTimer <= 0f && currentStamina >= dashStaminaCost)
-            {
-                currentStamina -= dashStaminaCost;
-                IsDashing = true;
-                IsAttacking = false;
-                _dashTimer = dashDuration;
-                _dashCooldownTimer = dashCooldown;
-
-                Vector2 moveIn = starterInputs != null ? starterInputs.move : Vector2.zero;
-                if (moveIn.sqrMagnitude > 0.01f)
-                {
-                    _dashWorldDir = (transform.right * moveIn.x + transform.forward * moveIn.y).normalized;
-                    _dashRollSide = moveIn.x;
-                }
-                else
-                {
-                    // Default quick backstep dodge if no directional key is held
-                    _dashWorldDir = -transform.forward;
-                    _dashRollSide = 0f;
-                }
-
-                TriggerCameraShake(0.025f, 0.14f);
-                if (footstepAudioClips != null && footstepAudioClips.Length > 0 && footstepAudioClips[0] != null)
-                {
-                    AudioSource.PlayClipAtPoint(footstepAudioClips[0], transform.position, 0.65f);
-                }
-
-                LastHitMessage = "Combat Dodge / Sidestep Dash! (Invulnerable)";
-                _lastHitMessageTime = Time.time;
-            }
-        }
-
-        public void OnEnemyAttackStrike(EnemyCombatTarget attacker, int incomingDamage)
-        {
-            if (attacker == null || attacker.IsDead) return;
-
-            // 1. Invulnerability frames during Combat Dodge / Sidestep Dash
-            if (IsDashing)
-            {
-                LastHitMessage = $"EVADED {attacker.name.Replace("Enemy_", "")}'s Strike with Dodge Dash! (0 DMG)";
-                _lastHitMessageTime = Time.time;
-                return;
-            }
-
-            // 2. Shield Block & Timed Perfect Parry
-            if (IsBlocking)
-            {
-                bool isPerfectParry = (Time.time - _lastBlockPressTime) <= perfectParryWindow;
-                if (isPerfectParry)
-                {
-                    currentStamina = Mathf.Min(maxStamina, currentStamina + 20f);
-                    attacker.ApplyParryStagger(1.8f);
-                    TriggerHitStop(0.055f);
-                    TriggerCameraShake(0.05f, 0.2f);
-                    if (characterAnimator != null)
-                    {
-                        characterAnimator.SetTrigger(_animIDParry);
-                    }
-                    LastHitMessage = $"PERFECT SHIELD PARRY! {attacker.name.Replace("Enemy_", "")} Staggered (0 DMG)!";
-                    _lastHitMessageTime = Time.time;
-                    return;
-                }
-                else
-                {
-                    int blockedDamage = Mathf.Max(2, Mathf.RoundToInt(incomingDamage * 0.20f));
-                    currentHealth = Mathf.Max(1, currentHealth - blockedDamage);
-                    currentStamina = Mathf.Max(0f, currentStamina - 12f);
-                    EnemyCombatTarget.SpawnHitSparkBurst(transform.position + Vector3.up * 1.2f + transform.forward * 0.5f, 16);
-                    TriggerHitStop(0.03f);
-                    TriggerCameraShake(0.035f, 0.16f);
-                    LastHitMessage = $"SHIELD BLOCKED {attacker.name.Replace("Enemy_", "")}! Reduced {incomingDamage} -> {blockedDamage} DMG";
-                    _lastHitMessageTime = Time.time;
-                    return;
-                }
-            }
-
-            // 3. Direct Unblocked Hit
-            currentHealth = Mathf.Max(0, currentHealth - incomingDamage);
-            _damageFlashTimer = 0.35f;
-            TriggerCameraShake(0.06f, 0.22f);
-
-            if (characterAnimator != null)
-            {
-                characterAnimator.SetTrigger(_animIDHit);
-            }
-
-            if (currentHealth <= 0)
-            {
-                currentHealth = maxHealth;
-                currentStamina = maxStamina;
-                LastHitMessage = "Player Second Wind! Restored to 100/100 HP";
-            }
-            else
-            {
-                LastHitMessage = $"Took {incomingDamage} DMG from {attacker.name.Replace("Enemy_", "")}! (Hold RMB to Block / Alt to Dash)";
-            }
-            _lastHitMessageTime = Time.time;
-        }
-
-        private void CheckStealthBackstabOpportunity()
-        {
-            _canBackstabPrompt = false;
-            float effectiveRange = (equippedWeapon == WeaponType.Spear ? attackRange * 1.35f : attackRange) + 0.35f;
-            Vector3 checkCenter = transform.position + Vector3.up * 1.0f + transform.forward * (effectiveRange * 0.55f);
-            Collider[] hits = Physics.OverlapSphere(checkCenter, attackRadius, enemyHitLayers, QueryTriggerInteraction.Ignore);
-
-            foreach (var hit in hits)
-            {
-                if (hit.transform.IsChildOf(transform)) continue;
-                var combatTarget = hit.GetComponentInParent<EnemyCombatTarget>();
-                if (combatTarget != null && !combatTarget.IsDead && combatTarget.CanBeStealthBackstabbed(transform))
-                {
-                    _canBackstabPrompt = true;
-                    break;
-                }
-            }
-        }
-
-        private void HandleViewAndArmorInput()
+        private void HandleCameraViewToggleInput()
         {
             if (WasKeyPressed(KeyCode.V
 #if ENABLE_INPUT_SYSTEM
@@ -831,77 +766,52 @@ namespace StealthGame.Player
                 isThirdPersonView = !isThirdPersonView;
                 ApplyCameraViewMode();
             }
-
-            if (WasKeyPressed(KeyCode.M
-#if ENABLE_INPUT_SYSTEM
-                , Key.M
-#endif
-            ) && modularHeroController != null)
-            {
-                modularHeroController.RandomizeArmorParts();
-                modularHeroController.RandomizeFaceParts();
-                ApplyCameraViewMode();
-                LastHitMessage = "Randomized Modular Character Armor & Gauntlets!";
-                _lastHitMessageTime = Time.time;
-            }
-        }
-
-        private void HandleBlockAndShieldInput()
-        {
-            if (WasKeyPressed(KeyCode.G
-#if ENABLE_INPUT_SYSTEM
-                , Key.G
-#endif
-            ))
-            {
-                shieldEquipped = !shieldEquipped;
-                UpdateShieldVisibility();
-                LastHitMessage = shieldEquipped ? "Equipped Off-Hand Shield [G]" : "Stowed Off-Hand Shield [G]";
-                _lastHitMessageTime = Time.time;
-            }
-
-            bool blockHeld = !IsAttacking && !IsDashing && IsBlockHeld();
-            if (WasBlockPressedThisFrame() && !IsAttacking && !IsDashing)
-            {
-                _lastBlockPressTime = Time.time;
-                if (characterAnimator != null)
-                {
-                    characterAnimator.SetTrigger(_animIDParry);
-                }
-                LastHitMessage = shieldEquipped ? "Shield Parry Guard! (Timed RMB = Perfect Parry)" : "Weapon Parry Guard!";
-                _lastHitMessageTime = Time.time;
-            }
-
-            IsBlocking = blockHeld;
-            _blockWeight = Mathf.MoveTowards(_blockWeight, IsBlocking ? 1f : 0f, Time.deltaTime * 10f);
-
-            if (characterAnimator != null)
-            {
-                characterAnimator.SetBool(_animIDIsBlocking, IsBlocking);
-            }
-
-            UpdateShieldVisibility();
-        }
-
-        private void UpdateShieldVisibility()
-        {
-            if (leftHandShield != null)
-            {
-                bool showShield = shieldEquipped || IsBlocking;
-                if (leftHandShield.activeSelf != showShield)
-                {
-                    leftHandShield.SetActive(showShield);
-                }
-            }
         }
 
         public void ApplyCameraViewMode()
         {
+            // Normalize any legacy serialized 3rd-person offsets that placed the pivot above the character's head
+            if (thirdPersonShoulderOffset.y > 0.15f || thirdPersonShoulderOffset.x > 0.22f)
+            {
+                thirdPersonShoulderOffset = new Vector3(0.12f, 0.08f, 0f);
+            }
+            if (thirdPersonCameraDistance > 2.6f || thirdPersonCameraDistance < 1.8f)
+            {
+                thirdPersonCameraDistance = 2.4f;
+            }
+            if (thirdPersonTopClamp > 45f)
+            {
+                thirdPersonTopClamp = 42f;
+            }
+
+            if (firstPersonController != null)
+            {
+                firstPersonController.TopClamp = isThirdPersonView ? thirdPersonTopClamp : firstPersonTopClamp;
+                firstPersonController.BottomClamp = isThirdPersonView ? thirdPersonBottomClamp : firstPersonBottomClamp;
+            }
+
             if (followCameraComponent != null)
             {
                 followCameraComponent.CameraDistance = isThirdPersonView ? thirdPersonCameraDistance : 0f;
                 followCameraComponent.ShoulderOffset = isThirdPersonView ? thirdPersonShoulderOffset : Vector3.zero;
-                followCameraComponent.VerticalArmLength = isThirdPersonView ? 0.25f : 0f;
+                followCameraComponent.VerticalArmLength = isThirdPersonView ? 0.05f : 0f;
+                followCameraComponent.CameraSide = 0.55f;
+
+                var vcam = followCameraComponent.GetComponent<CinemachineCamera>();
+                if (vcam != null)
+                {
+                    var lens = vcam.Lens;
+                    lens.FieldOfView = 55f;
+                    lens.NearClipPlane = 0.05f;
+                    vcam.Lens = lens;
+                }
+
+                var perlin = followCameraComponent.GetComponent<CinemachineBasicMultiChannelPerlin>();
+                if (perlin != null)
+                {
+                    perlin.PivotOffset = Vector3.zero;
+                    perlin.AmplitudeGain = isThirdPersonView ? 0.12f : 0.05f;
+                }
             }
 
             if (firstPersonWeaponPivot != null)
@@ -909,11 +819,31 @@ namespace StealthGame.Player
                 firstPersonWeaponPivot.gameObject.SetActive(false);
             }
 
+            EnsureFirstPersonArmMeshReady();
+
             if (characterModelRoot != null)
             {
                 foreach (var smr in characterModelRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                 {
                     smr.updateWhenOffscreen = true;
+
+                    if (smr == bodySkinnedMeshRenderer && fullBodyMesh != null && firstPersonRightArmMesh != null)
+                    {
+                        if (isThirdPersonView)
+                        {
+                            smr.sharedMesh = fullBodyMesh;
+                            smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                            smr.enabled = true;
+                        }
+                        else
+                        {
+                            // In First-Person View, swap to the right-forearm-and-hand-only mesh so there is ZERO torso/shoulder/neck clipping or polygon stretching
+                            smr.sharedMesh = firstPersonRightArmMesh;
+                            smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                            smr.enabled = true;
+                        }
+                        continue;
+                    }
 
                     bool isHeadOrChestPart = IsUnderNamedParent(smr.transform, "HEADS") ||
                                              IsUnderNamedParent(smr.transform, "FACE DETAILS PARTS") ||
@@ -928,6 +858,14 @@ namespace StealthGame.Player
                         smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
                     }
                 }
+
+                // Show hair (dreadlocks), backpack, and hip pouch in 3rd-person view; hide them in 1st-person view so they never clip the camera
+                foreach (var mr in characterModelRoot.GetComponentsInChildren<MeshRenderer>(true))
+                {
+                    if (rightHandWeaponSocket != null && mr.transform.IsChildOf(rightHandWeaponSocket)) continue;
+                    mr.enabled = isThirdPersonView;
+                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                }
             }
 
             if (thirdPersonWeapons != null)
@@ -939,14 +877,6 @@ namespace StealthGame.Player
                     {
                         r.enabled = true;
                     }
-                }
-            }
-
-            if (leftHandShield != null)
-            {
-                foreach (var r in leftHandShield.GetComponentsInChildren<Renderer>(true))
-                {
-                    r.enabled = true;
                 }
             }
         }
@@ -964,6 +894,8 @@ namespace StealthGame.Player
 
         private void HandleWeaponSwitchInput()
         {
+            if (IsAttacking) return;
+
             if (WasKeyPressed(KeyCode.Alpha1
 #if ENABLE_INPUT_SYSTEM
                 , Key.Digit1
@@ -1073,7 +1005,9 @@ namespace StealthGame.Player
             }
 
             float targetHeight = IsCrouching ? crouchingHeight : standingHeight;
-            float targetCamY = IsCrouching ? crouchingCameraY : standingCameraY;
+            float standingRootY = isThirdPersonView ? 1.05f : Mathf.Max(1.46f, standingCameraY);
+            float crouchingRootY = isThirdPersonView ? 0.68f : Mathf.Max(0.85f, crouchingCameraY);
+            float targetCamY = IsCrouching ? crouchingRootY : standingRootY;
             float targetCrouchWeight = IsCrouching ? 1f : 0f;
 
             _currentHeight = Mathf.Lerp(_currentHeight, targetHeight, Time.deltaTime * crouchTransitionSpeed);
@@ -1086,23 +1020,20 @@ namespace StealthGame.Player
                 characterController.center = new Vector3(0f, _currentHeight * 0.5f, 0f);
             }
 
+            if (cameraRoot != null)
+            {
+                cameraRoot.localPosition = new Vector3(0f, _currentCameraY, 0f);
+            }
+
+            if (followCameraComponent != null && isThirdPersonView && followCameraComponent.VerticalArmLength > 0.10f)
+            {
+                ApplyCameraViewMode();
+            }
+
             if (firstPersonController != null)
             {
-                if (IsCrouching)
-                {
-                    firstPersonController.MoveSpeed = crouchMoveSpeed;
-                    firstPersonController.SprintSpeed = crouchMoveSpeed;
-                }
-                else if (IsBlocking)
-                {
-                    firstPersonController.MoveSpeed = blockMoveSpeed;
-                    firstPersonController.SprintSpeed = blockMoveSpeed;
-                }
-                else
-                {
-                    firstPersonController.MoveSpeed = normalWalkSpeed;
-                    firstPersonController.SprintSpeed = normalSprintSpeed;
-                }
+                firstPersonController.MoveSpeed = IsCrouching ? crouchMoveSpeed : normalWalkSpeed;
+                firstPersonController.SprintSpeed = IsCrouching ? crouchMoveSpeed : normalSprintSpeed;
             }
         }
 
@@ -1117,66 +1048,88 @@ namespace StealthGame.Player
             }
         }
 
-        private void HandleMeleeAttackInput()
+        private void HandleMeleeAttackWithBuffer()
         {
+            if (_bufferedAttackTimer > 0f)
+            {
+                _bufferedAttackTimer -= Time.deltaTime;
+            }
+
+            if (_attackCooldownTimer > 0f)
+            {
+                _attackCooldownTimer -= Time.deltaTime;
+            }
+
+            // Record attack input into a short buffer window so spamming LMB queues at most 1 attack after recovery
+            if (WasAttackPressed())
+            {
+                _bufferedAttackTimer = attackInputBufferWindow;
+            }
+
             if (IsAttacking)
             {
-                if (_hitStopTimer <= 0f)
+                _attackTimer += Time.deltaTime;
+
+                // Trigger hit detection at 35% of the weapon swing
+                if (!_hasTriggeredHitThisSwing && _attackTimer >= _attackDuration * 0.35f)
                 {
-                    _attackTimer += Time.deltaTime;
+                    _hasTriggeredHitThisSwing = true;
+                    PerformMeleeHitDetection();
                 }
+
                 if (_attackTimer >= _attackDuration)
                 {
                     IsAttacking = false;
-                    _lastAttackEndTime = Time.time;
+                    // Enforce buffer pause after attack finishes before next attack can start
+                    _attackCooldownTimer = attackCooldownBuffer;
                 }
                 return;
             }
 
-            if (Time.time - _lastAttackEndTime > comboResetTime)
+            // Only start the next attack when both the swing and the buffer cooldown have completed
+            if (_bufferedAttackTimer > 0f && _attackCooldownTimer <= 0f)
             {
-                CurrentComboStep = 0;
-            }
-
-            if (WasAttackPressed())
-            {
-                StartMeleeComboStep();
+                _bufferedAttackTimer = 0f;
+                StartWeaponAttack();
             }
         }
 
-        private void StartMeleeComboStep()
+        private void StartWeaponAttack()
         {
-            CurrentComboStep = _canBackstabPrompt ? 3 : ((CurrentComboStep % 3) + 1);
             IsAttacking = true;
-            IsBlocking = false;
             _attackTimer = 0f;
+            _hasTriggeredHitThisSwing = false;
 
-            float weaponDurationFactor = equippedWeapon == WeaponType.Sword ? 0.48f :
-                                         equippedWeapon == WeaponType.Spear ? 0.54f : 0.60f;
-            _attackDuration = CurrentComboStep == 3 ? weaponDurationFactor * 1.2f : weaponDurationFactor;
+            // Distinct duration per weapon type matching the Mixamo attack animations
+            _attackDuration = equippedWeapon == WeaponType.Sword ? 0.68f :
+                              equippedWeapon == WeaponType.Spear ? 0.78f : 0.84f;
 
             if (characterAnimator != null)
             {
                 characterAnimator.SetInteger(_animIDWeaponType, (int)equippedWeapon);
-                characterAnimator.SetInteger(_animIDComboStep, CurrentComboStep);
+                characterAnimator.ResetTrigger(_animIDAttack);
                 characterAnimator.SetTrigger(_animIDAttack);
+
+                bool isStandingStill = _animationBlend < 0.25f && !IsCrouching && (firstPersonController == null || firstPersonController.Grounded);
+                if (isStandingStill)
+                {
+                    characterAnimator.ResetTrigger(_animIDFullBodyAttack);
+                    characterAnimator.SetTrigger(_animIDFullBodyAttack);
+                }
             }
 
             if (footstepAudioClips != null && footstepAudioClips.Length > 0 && footstepAudioClips[0] != null)
             {
                 AudioSource.PlayClipAtPoint(footstepAudioClips[0], transform.position + Vector3.up, 0.45f);
             }
-
-            PerformMeleeHitDetection();
         }
 
         private void PerformMeleeHitDetection()
         {
-            float effectiveRange = equippedWeapon == WeaponType.Spear ? attackRange * 1.35f : attackRange;
-            int baseDmg = comboBaseDamage[Mathf.Clamp(CurrentComboStep - 1, 0, comboBaseDamage.Length - 1)];
-            float weaponMult = equippedWeapon == WeaponType.Axe ? 1.35f :
-                               equippedWeapon == WeaponType.Spear ? 1.15f : 1.0f;
-            int finalDamage = Mathf.RoundToInt(baseDmg * weaponMult);
+            float effectiveRange = equippedWeapon == WeaponType.Spear ? spearAttackRange :
+                                   (equippedWeapon == WeaponType.Axe ? axeAttackRange : swordAttackRange);
+            int finalDamage = equippedWeapon == WeaponType.Axe ? axeDamage :
+                              (equippedWeapon == WeaponType.Spear ? spearDamage : swordDamage);
 
             Vector3 hitCenter = transform.position + Vector3.up * 1.0f + transform.forward * (effectiveRange * 0.55f);
             Collider[] hits = Physics.OverlapSphere(hitCenter, attackRadius, enemyHitLayers, QueryTriggerInteraction.Ignore);
@@ -1202,45 +1155,14 @@ namespace StealthGame.Player
                     if (combatTarget != null && !combatTarget.IsDead)
                     {
                         hitEnemy = true;
-                        bool isStealthBackstab = combatTarget.CanBeStealthBackstabbed(transform);
-                        bool isParryRiposte = combatTarget.IsStaggered;
-
-                        if (isStealthBackstab)
-                        {
-                            finalDamage = Mathf.Max(combatTarget.maxHealth, finalDamage * 3);
-                        }
-                        else if (isParryRiposte)
-                        {
-                            finalDamage = Mathf.RoundToInt(finalDamage * 1.75f);
-                        }
-
-                        combatTarget.TakeDamage(finalDamage, isStealthBackstab);
-
-                        // Apply Hit-Stop & Camera Shake scaled by attack weight
-                        bool heavyImpact = isStealthBackstab || isParryRiposte || CurrentComboStep == 3 || equippedWeapon == WeaponType.Axe;
-                        TriggerHitStop(heavyImpact ? 0.055f : 0.032f);
-                        TriggerCameraShake(heavyImpact ? 0.055f : 0.028f, heavyImpact ? 0.20f : 0.12f);
+                        combatTarget.TakeDamage(finalDamage, false);
 
                         string targetName = (enemy != null ? enemy.name : combatTarget.name).Replace("Enemy_", "");
-                        if (isStealthBackstab)
-                        {
-                            LastHitMessage = $"CRITICAL STEALTH BACKSTAB on {targetName} ({finalDamage} DMG) -> ASSASSINATED!";
-                        }
-                        else if (isParryRiposte)
-                        {
-                            LastHitMessage = $"PARRY RIPOSTE CRIT on {targetName} ({finalDamage} DMG)! ({combatTarget.currentHealth}/{combatTarget.maxHealth} HP)";
-                        }
-                        else
-                        {
-                            string statusSuffix = combatTarget.IsDead
-                                ? " -> DEFEATED!"
-                                : $" ({combatTarget.currentHealth}/{combatTarget.maxHealth} HP)";
-                            LastHitMessage = $"HIT {targetName} with {equippedWeapon} (Combo {CurrentComboStep}/3) for {finalDamage} DMG!{statusSuffix}";
-                        }
+                        string statusSuffix = combatTarget.IsDead
+                            ? " -> DEFEATED!"
+                            : $" ({combatTarget.currentHealth}/{combatTarget.maxHealth} HP)";
+                        LastHitMessage = $"Hit {targetName} with {equippedWeapon} for {finalDamage} DMG!{statusSuffix}";
                         _lastHitMessageTime = Time.time;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                        Debug.Log($"[Player Melee] {LastHitMessage}", combatTarget);
-#endif
                         break;
                     }
                 }
@@ -1256,15 +1178,39 @@ namespace StealthGame.Player
                 if (hitSurface)
                 {
                     EnemyCombatTarget.SpawnHitSparkBurst(surfaceSparkPos);
-                    TriggerCameraShake(0.018f, 0.09f);
                 }
 
-                string moveName = equippedWeapon == WeaponType.Spear ? "Polearm Strike" :
-                                  (CurrentComboStep == 1 ? "Right Slash" :
-                                  (CurrentComboStep == 2 ? "Left Cross-Slash" : "Heavy 2H Finisher"));
-                LastHitMessage = $"{equippedWeapon} — Combo {CurrentComboStep}/3 ({moveName})";
+                string attackStyle = equippedWeapon == WeaponType.Sword ? "Sword Slash" :
+                                     (equippedWeapon == WeaponType.Spear ? "Spear Horizontal Strike" : "Axe Downward Cleave");
+                LastHitMessage = $"{equippedWeapon} — {attackStyle}";
                 _lastHitMessageTime = Time.time;
             }
+        }
+
+        public void OnEnemyAttackStrike(EnemyCombatTarget attacker, int incomingDamage)
+        {
+            if (attacker != null && attacker.IsDead) return;
+            if (incomingDamage <= 0) return;
+
+            currentHealth = Mathf.Max(0, currentHealth - incomingDamage);
+            _damageFlashTimer = 0.30f;
+
+            if (characterAnimator != null)
+            {
+                characterAnimator.SetTrigger(_animIDHit);
+            }
+
+            string attackerName = attacker != null ? attacker.name.Replace("Enemy_", "") : "Enemy";
+            if (currentHealth <= 0)
+            {
+                currentHealth = maxHealth;
+                LastHitMessage = "Player Respawned (100/100 HP)";
+            }
+            else
+            {
+                LastHitMessage = $"Took {incomingDamage} DMG from {attackerName}! ({currentHealth}/{maxHealth} HP)";
+            }
+            _lastHitMessageTime = Time.time;
         }
 
         private void UpdateLocomotionAndAnimator()
@@ -1275,33 +1221,43 @@ namespace StealthGame.Player
             float targetSpeed = 0f;
             Vector2 moveInput = starterInputs.move;
 
-            if (IsDashing)
-            {
-                targetSpeed = normalSprintSpeed;
-            }
-            else if (moveInput != Vector2.zero)
+            if (moveInput != Vector2.zero)
             {
                 targetSpeed = IsCrouching ? crouchMoveSpeed :
-                              (IsBlocking ? blockMoveSpeed :
-                              (starterInputs.sprint ? normalSprintSpeed : normalWalkSpeed));
+                              (starterInputs.sprint ? normalSprintSpeed : normalWalkSpeed);
             }
 
-            _modelYawOffset = Mathf.LerpAngle(_modelYawOffset, 0f, Time.deltaTime * 12f);
-
             float speedRate = firstPersonController.SpeedChangeRate;
-            _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * speedRate);
-            if (_animationBlend < 0.01f) _animationBlend = 0f;
+            if (targetSpeed > 0.01f)
+            {
+                _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * speedRate);
+            }
+            else
+            {
+                _animationBlend = Mathf.MoveTowards(_animationBlend, 0f, Time.deltaTime * 28f);
+                if (_animationBlend < 0.15f) _animationBlend = 0f;
+            }
 
-            Vector2 moveDir = moveInput.sqrMagnitude > 0.001f ? moveInput.normalized : (IsDashing ? new Vector2(0f, -1f) : Vector2.zero);
+            Vector2 moveDir = moveInput.sqrMagnitude > 0.001f ? moveInput.normalized : Vector2.zero;
             float targetMoveX = moveDir.x * targetSpeed;
             float targetMoveZ = moveDir.y * targetSpeed;
 
-            _moveXBlend = Mathf.Lerp(_moveXBlend, targetMoveX, Time.deltaTime * speedRate);
-            _moveZBlend = Mathf.Lerp(_moveZBlend, targetMoveZ, Time.deltaTime * speedRate);
-            if (Mathf.Abs(_moveXBlend) < 0.01f) _moveXBlend = 0f;
-            if (Mathf.Abs(_moveZBlend) < 0.01f) _moveZBlend = 0f;
+            if (targetSpeed > 0.01f)
+            {
+                _moveXBlend = Mathf.Lerp(_moveXBlend, targetMoveX, Time.deltaTime * speedRate);
+                _moveZBlend = Mathf.Lerp(_moveZBlend, targetMoveZ, Time.deltaTime * speedRate);
+            }
+            else
+            {
+                _moveXBlend = Mathf.MoveTowards(_moveXBlend, 0f, Time.deltaTime * 28f);
+                _moveZBlend = Mathf.MoveTowards(_moveZBlend, 0f, Time.deltaTime * 28f);
+            }
+            if (Mathf.Abs(_moveXBlend) < 0.05f) _moveXBlend = 0f;
+            if (Mathf.Abs(_moveZBlend) < 0.05f) _moveZBlend = 0f;
 
-            float inputMagnitude = starterInputs.analogMovement ? moveInput.magnitude : (moveInput == Vector2.zero && !IsDashing ? 0f : 1f);
+            float inputMagnitude = (starterInputs.analogMovement && moveInput != Vector2.zero)
+                ? Mathf.Max(0.5f, moveInput.magnitude)
+                : 1f;
 
             characterAnimator.SetFloat(_animIDSpeed, _animationBlend);
             characterAnimator.SetFloat(_animIDMoveX, _moveXBlend);
@@ -1309,15 +1265,22 @@ namespace StealthGame.Player
             characterAnimator.SetFloat(_animIDMotionSpeed, inputMagnitude);
             characterAnimator.SetBool(_animIDGrounded, isGrounded);
             characterAnimator.SetBool(_animIDIsCrouching, IsCrouching);
+            characterAnimator.SetInteger(_animIDWeaponType, (int)equippedWeapon);
 
-            if (isGrounded)
+            bool jumpTriggered = firstPersonController.JumpTriggeredThisFrame;
+            if (jumpTriggered)
             {
-                characterAnimator.SetBool(_animIDJump, starterInputs.jump && !IsCrouching);
-                characterAnimator.SetBool(_animIDFreeFall, false);
+                firstPersonController.JumpTriggeredThisFrame = false;
             }
-            else
+
+            // Always keep Jump and FreeFall bools false so JumpStart never loops or triggers a second fall/land cycle;
+            // trigger JumpStart once via CrossFadeInFixedTime on the exact frame Space is pressed.
+            characterAnimator.SetBool(_animIDJump, false);
+            characterAnimator.SetBool(_animIDFreeFall, false);
+
+            if (jumpTriggered && !IsCrouching)
             {
-                characterAnimator.SetBool(_animIDFreeFall, true);
+                characterAnimator.CrossFadeInFixedTime("JumpStart", 0.06f, 0, 0.25f);
             }
 
             if (!_wasGrounded && isGrounded && landingAudioClip != null)
@@ -1352,136 +1315,256 @@ namespace StealthGame.Player
             }
         }
 
-        private void ApplyProceduralCrouchBlockAndFingerGrip()
+        private void ApplyProceduralModelAndFingerGrip()
         {
+            bool usingFpArmOnlyMesh = !isThirdPersonView && firstPersonRightArmMesh != null && bodySkinnedMeshRenderer != null;
+
             if (characterModelRoot != null)
             {
-                if (isThirdPersonView)
+                if (isThirdPersonView || usingFpArmOnlyMesh)
                 {
-                    characterModelRoot.localPosition = new Vector3(0f, -0.38f * _crouchWeight, 0f);
-                    characterModelRoot.localRotation = Quaternion.Euler(0f, _modelYawOffset, 0f);
+                    characterModelRoot.localPosition = Vector3.zero;
+                    characterModelRoot.localRotation = Quaternion.identity;
                 }
                 else
                 {
-                    characterModelRoot.localPosition = new Vector3(0f, -0.22f - 0.38f * _crouchWeight, -0.38f);
+                    // Fallback if using non-Synty modular mesh without FP arm submesh
+                    characterModelRoot.localPosition = new Vector3(0f, -0.22f - 0.30f * _crouchWeight, -0.38f);
                     characterModelRoot.localRotation = Quaternion.identity;
                 }
             }
 
             if (_headBone != null)
             {
-                _headBone.localScale = isThirdPersonView ? Vector3.one : Vector3.one * 0.001f;
+                _headBone.localScale = (isThirdPersonView || usingFpArmOnlyMesh) ? Vector3.one : Vector3.one * 0.001f;
             }
 
-            if (_crouchWeight > 0.001f && _hipsBone != null)
+            // Lock Root & Hips in characterModelRoot space so non-"In Place" Mixamo clips
+            // (Walking, Running, Crouched_Walking, Jumping, Attacks) stay 100% in-place inside PlayerCapsule
+            // and never walk/run forward or bounce vertically out of the capsule and snap/loop back.
+            if (_hipsBone != null && characterModelRoot != null)
             {
-                if (_spineBone != null)
-                    _spineBone.localRotation *= Quaternion.Euler(22f * _crouchWeight, 0f, 0f);
-                if (_leftUpperLegBone != null)
-                    _leftUpperLegBone.localRotation *= Quaternion.Euler(-48f * _crouchWeight, 0f, 0f);
-                if (_leftLowerLegBone != null)
-                    _leftLowerLegBone.localRotation *= Quaternion.Euler(75f * _crouchWeight, 0f, 0f);
-                if (_rightUpperLegBone != null)
-                    _rightUpperLegBone.localRotation *= Quaternion.Euler(-48f * _crouchWeight, 0f, 0f);
-                if (_rightLowerLegBone != null)
-                    _rightLowerLegBone.localRotation *= Quaternion.Euler(75f * _crouchWeight, 0f, 0f);
+                if (_hipsBone.parent != null && _hipsBone.parent != characterModelRoot)
+                {
+                    _hipsBone.parent.localPosition = new Vector3(0f, 0.028f, 0f);
+                    _hipsBone.parent.localRotation = Quaternion.identity;
+                }
+
+                Vector3 hipsLocal = characterModelRoot.InverseTransformPoint(_hipsBone.position);
+                hipsLocal.x = 0f;
+                hipsLocal.z = 0f;
+                float minHipsY = IsCrouching ? 0.52f : 0.84f;
+                hipsLocal.y = Mathf.Clamp(hipsLocal.y, minHipsY, 0.94f);
+                _hipsBone.position = characterModelRoot.TransformPoint(hipsLocal);
             }
 
-            if (isThirdPersonView && _blockWeight > 0.001f)
-            {
-                if (_leftUpperArmBone != null)
-                    _leftUpperArmBone.localRotation *= Quaternion.Euler(-38f * _blockWeight, 28f * _blockWeight, -22f * _blockWeight);
-                if (_leftLowerArmBone != null)
-                    _leftLowerArmBone.localRotation *= Quaternion.Euler(-45f * _blockWeight, 0f, -35f * _blockWeight);
-                if (_rightUpperArmBone != null)
-                    _rightUpperArmBone.localRotation *= Quaternion.Euler(-22f * _blockWeight, -18f * _blockWeight, 15f * _blockWeight);
-            }
+            // Detect whether the rig uses +X along the right arm/hand (Synty Polygon Apocalypse) or +Y (GanzSe)
+            bool isSyntyXAxisRig = _rightHandBone != null && Mathf.Abs(_rightHandBone.localPosition.x) > Mathf.Abs(_rightHandBone.localPosition.y);
 
-            Quaternion rightFingerCurl = Quaternion.Euler(0f, 0f, 62f);
+            // Curl the right-hand fingers tightly into the palm around the weapon handle
+            Quaternion rightFingerCurl = isSyntyXAxisRig
+                ? Quaternion.Euler(0f, 0f, -54f)
+                : Quaternion.Euler(0f, 0f, 62f);
             for (int i = 0; i < _rightFingerBones.Count; i++)
             {
                 if (_rightFingerBones[i] != null)
                     _rightFingerBones[i].localRotation = rightFingerCurl;
             }
-            Quaternion rightThumbCurl = Quaternion.Euler(25f, 0f, 38f);
+
+            Quaternion rightThumbCurl = isSyntyXAxisRig
+                ? Quaternion.Euler(-16f, 18f, -34f)
+                : Quaternion.Euler(25f, 0f, 38f);
             for (int i = 0; i < _rightThumbBones.Count; i++)
             {
                 if (_rightThumbBones[i] != null)
                     _rightThumbBones[i].localRotation *= rightThumbCurl;
             }
+        }
 
-            Quaternion leftFingerCurl = Quaternion.Euler(0f, 0f, -55f);
-            for (int i = 0; i < _leftFingerBones.Count; i++)
+        private static Quaternion AlignBoneAxisWithWorldDir(Vector3 boneLocalAxis, Vector3 localPerpAxis, Vector3 worldDir, Vector3 worldPerp)
+        {
+            if (boneLocalAxis.sqrMagnitude < 0.0001f) boneLocalAxis = Vector3.right;
+            boneLocalAxis.Normalize();
+            localPerpAxis = Vector3.ProjectOnPlane(localPerpAxis, boneLocalAxis);
+            if (localPerpAxis.sqrMagnitude < 0.0001f)
             {
-                if (_leftFingerBones[i] != null)
-                    _leftFingerBones[i].localRotation = leftFingerCurl;
+                localPerpAxis = Mathf.Abs(boneLocalAxis.y) < 0.9f ? Vector3.up : Vector3.forward;
+            }
+            localPerpAxis.Normalize();
+
+            if (worldDir.sqrMagnitude < 0.0001f) worldDir = Vector3.forward;
+            worldDir.Normalize();
+            worldPerp = Vector3.ProjectOnPlane(worldPerp, worldDir);
+            if (worldPerp.sqrMagnitude < 0.0001f) worldPerp = Vector3.up;
+            worldPerp.Normalize();
+
+            return Quaternion.LookRotation(worldPerp, worldDir) * Quaternion.Inverse(Quaternion.LookRotation(localPerpAxis, boneLocalAxis));
+        }
+
+        private void EvaluateFirstPersonAttackPose(float normalizedTime, out Vector3 posOffset, out Quaternion rotOffset)
+        {
+            float t = Mathf.Clamp01(normalizedTime);
+
+            if (equippedWeapon == WeaponType.Sword)
+            {
+                // Sword: 3-phase diagonal slash (Windup -> Fast Diagonal Slash -> Follow-Through & Recovery)
+                Vector3 windupPos = new Vector3(0.11f, 0.09f, -0.05f);
+                Quaternion windupRot = Quaternion.Euler(-22f, 26f, 28f);
+
+                Vector3 strikePos = new Vector3(-0.34f, -0.06f, 0.14f);
+                Quaternion strikeRot = Quaternion.Euler(52f, -64f, -56f);
+
+                if (t < 0.22f)
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, t / 0.22f);
+                    posOffset = Vector3.Lerp(Vector3.zero, windupPos, p);
+                    rotOffset = Quaternion.Slerp(Quaternion.identity, windupRot, p);
+                }
+                else if (t < 0.54f)
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, (t - 0.22f) / 0.32f);
+                    posOffset = Vector3.Lerp(windupPos, strikePos, p) + new Vector3(0f, 0.03f * Mathf.Sin(p * Mathf.PI), 0.08f * Mathf.Sin(p * Mathf.PI));
+                    rotOffset = Quaternion.Slerp(windupRot, strikeRot, p);
+                }
+                else
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, (t - 0.54f) / 0.46f);
+                    posOffset = Vector3.Lerp(strikePos, Vector3.zero, p);
+                    rotOffset = Quaternion.Slerp(strikeRot, Quaternion.identity, p);
+                }
+            }
+            else if (equippedWeapon == WeaponType.Spear)
+            {
+                // Spear: 3-phase polearm draw-back -> long forward piercing thrust + horizontal sweep -> recovery
+                Vector3 windupPos = new Vector3(0.10f, -0.04f, -0.14f);
+                Quaternion windupRot = Quaternion.Euler(14f, 22f, 18f);
+
+                Vector3 thrustPos = new Vector3(-0.18f, 0.04f, 0.28f);
+                Quaternion thrustRot = Quaternion.Euler(56f, -38f, -36f);
+
+                if (t < 0.22f)
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, t / 0.22f);
+                    posOffset = Vector3.Lerp(Vector3.zero, windupPos, p);
+                    rotOffset = Quaternion.Slerp(Quaternion.identity, windupRot, p);
+                }
+                else if (t < 0.54f)
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, (t - 0.22f) / 0.32f);
+                    posOffset = Vector3.Lerp(windupPos, thrustPos, p) + new Vector3(0.06f * Mathf.Sin(p * Mathf.PI), 0f, 0.06f * Mathf.Sin(p * Mathf.PI));
+                    rotOffset = Quaternion.Slerp(windupRot, thrustRot, p);
+                }
+                else
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, (t - 0.54f) / 0.46f);
+                    posOffset = Vector3.Lerp(thrustPos, Vector3.zero, p);
+                    rotOffset = Quaternion.Slerp(thrustRot, Quaternion.identity, p);
+                }
+            }
+            else
+            {
+                // Axe: 3-phase heavy overhead raise -> powerful vertical downward cleave -> weighted recovery
+                Vector3 windupPos = new Vector3(-0.04f, 0.22f, -0.08f);
+                Quaternion windupRot = Quaternion.Euler(-42f, 8f, -10f);
+
+                Vector3 cleavePos = new Vector3(-0.10f, -0.18f, 0.18f);
+                Quaternion cleaveRot = Quaternion.Euler(76f, -20f, -14f);
+
+                if (t < 0.26f)
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, t / 0.26f);
+                    posOffset = Vector3.Lerp(Vector3.zero, windupPos, p);
+                    rotOffset = Quaternion.Slerp(Quaternion.identity, windupRot, p);
+                }
+                else if (t < 0.56f)
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, (t - 0.26f) / 0.30f);
+                    posOffset = Vector3.Lerp(windupPos, cleavePos, p) + new Vector3(0f, 0f, 0.08f * Mathf.Sin(p * Mathf.PI));
+                    rotOffset = Quaternion.Slerp(windupRot, cleaveRot, p);
+                }
+                else
+                {
+                    float p = Mathf.SmoothStep(0f, 1f, (t - 0.56f) / 0.44f);
+                    posOffset = Vector3.Lerp(cleavePos, Vector3.zero, p);
+                    rotOffset = Quaternion.Slerp(cleaveRot, Quaternion.identity, p);
+                }
             }
         }
 
         private void UpdateFirstPersonArmsAndWeaponPose()
         {
             if (isThirdPersonView) return;
-            if (_rightHandBone == null || _rightLowerArmBone == null || _rightUpperArmBone == null) return;
+            if (_rightHandBone == null || _rightLowerArmBone == null) return;
 
             if (mainCamera == null) mainCamera = Camera.main;
             Transform camTransform = mainCamera != null ? mainCamera.transform : cameraRoot;
             if (camTransform == null) return;
 
-            float moveMag = (starterInputs != null && starterInputs.move != Vector2.zero && firstPersonController != null && firstPersonController.Grounded) ? 1f : 0f;
-            float bobFreq = (starterInputs != null && starterInputs.sprint) ? 12f : 8f;
-            float bobAmp = (starterInputs != null && starterInputs.sprint) ? 0.022f : 0.012f;
-
-            Vector3 bobOffset = Vector3.zero;
-            if (moveMag > 0.1f)
+            // 1. Smooth camera look sway
+            Vector3 camEuler = camTransform.eulerAngles;
+            if (!_camAnglesInitialized)
             {
-                bobOffset.x = Mathf.Cos(Time.time * bobFreq * 0.5f) * bobAmp;
-                bobOffset.y = Mathf.Abs(Mathf.Sin(Time.time * bobFreq)) * bobAmp;
+                _lastCamYaw = camEuler.y;
+                _lastCamPitch = camEuler.x;
+                _camAnglesInitialized = true;
             }
+            float deltaYaw = Mathf.DeltaAngle(_lastCamYaw, camEuler.y);
+            float deltaPitch = Mathf.DeltaAngle(_lastCamPitch, camEuler.x);
+            _lastCamYaw = camEuler.y;
+            _lastCamPitch = camEuler.x;
 
-            Vector3 rGripLocalPos = _fpGripBaseLocalPos + bobOffset;
-            Quaternion rGripLocalRot = _fpGripBaseLocalRot;
+            Vector3 targetSwayPos = new Vector3(
+                Mathf.Clamp(-deltaYaw * 0.0022f, -0.035f, 0.035f),
+                Mathf.Clamp(deltaPitch * 0.0020f, -0.030f, 0.030f),
+                0f);
+            Vector3 targetSwayRot = new Vector3(
+                Mathf.Clamp(-deltaPitch * 0.45f, -7f, 7f),
+                Mathf.Clamp(deltaYaw * 0.55f, -9f, 9f),
+                Mathf.Clamp(-deltaYaw * 0.65f, -10f, 10f));
 
-            Vector3 lHandLocalPos = _fpLeftHandBaseLocalPos + new Vector3(-bobOffset.x * 0.8f, bobOffset.y * 0.8f, 0f);
-            Quaternion lHandLocalRot = _fpLeftHandBaseLocalRot;
+            float swayLerp = Mathf.Clamp01(Time.deltaTime * 10f);
+            _fpSwayOffset = Vector3.Lerp(_fpSwayOffset, targetSwayPos, swayLerp);
+            _fpSwayAngles = Vector3.Lerp(_fpSwayAngles, targetSwayRot, swayLerp);
 
-            if (_blockWeight > 0.001f && !IsAttacking)
-            {
-                Vector3 blockRightPos = new Vector3(0.14f, -0.15f, 0.46f);
-                Quaternion blockRightRot = Quaternion.Euler(8f, -42f, 34f);
+            // 2. Smooth idle breathing + walk/sprint bobbing
+            bool isMovingOnGround = starterInputs != null && starterInputs.move.sqrMagnitude > 0.01f &&
+                                    firstPersonController != null && firstPersonController.Grounded;
+            float targetBobWeight = isMovingOnGround ? 1f : 0f;
+            _fpBobBlend = Mathf.MoveTowards(_fpBobBlend, targetBobWeight, Time.deltaTime * 6f);
 
-                Vector3 blockLeftPos = new Vector3(-0.08f, -0.14f, 0.44f);
-                Quaternion blockLeftRot = Quaternion.Euler(12f, 52f, -22f);
+            float bobFreq = IsCrouching ? 5.5f : ((starterInputs != null && starterInputs.sprint) ? 11.0f : 7.8f);
+            float bobAmp = IsCrouching ? 0.007f : ((starterInputs != null && starterInputs.sprint) ? 0.018f : 0.011f);
+            _fpBobPhase += Time.deltaTime * bobFreq;
 
-                rGripLocalPos = Vector3.Lerp(rGripLocalPos, blockRightPos + bobOffset * 0.35f, _blockWeight);
-                rGripLocalRot = Quaternion.Slerp(rGripLocalRot, blockRightRot, _blockWeight);
+            Vector3 breatheOffset = new Vector3(
+                Mathf.Cos(Time.time * 1.1f) * 0.0025f,
+                Mathf.Sin(Time.time * 2.2f) * 0.0040f,
+                0f);
 
-                lHandLocalPos = Vector3.Lerp(lHandLocalPos, blockLeftPos + bobOffset * 0.35f, _blockWeight);
-                lHandLocalRot = Quaternion.Slerp(lHandLocalRot, blockLeftRot, _blockWeight);
-            }
+            Vector3 walkBobOffset = new Vector3(
+                Mathf.Cos(_fpBobPhase * 0.5f) * bobAmp,
+                Mathf.Abs(Mathf.Sin(_fpBobPhase)) * bobAmp,
+                0f) * _fpBobBlend;
 
+            // 3. Base weapon ready pose per weapon type + crouch offset
+            Vector3 basePos = equippedWeapon == WeaponType.Spear ? _fpSpearBaseLocalPos :
+                              (equippedWeapon == WeaponType.Axe ? _fpAxeBaseLocalPos : _fpSwordBaseLocalPos);
+            Quaternion baseRot = equippedWeapon == WeaponType.Spear ? _fpSpearBaseLocalRot :
+                                 (equippedWeapon == WeaponType.Axe ? _fpAxeBaseLocalRot : _fpSwordBaseLocalRot);
+
+            Vector3 crouchPosOffset = new Vector3(-0.02f, -0.025f, -0.015f) * _crouchWeight;
+            Quaternion crouchRotOffset = Quaternion.Euler(5f * _crouchWeight, -8f * _crouchWeight, 6f * _crouchWeight);
+
+            Vector3 rGripLocalPos = basePos + crouchPosOffset + breatheOffset + walkBobOffset + _fpSwayOffset;
+            Quaternion rGripLocalRot = baseRot * crouchRotOffset * Quaternion.Euler(_fpSwayAngles);
+
+            // 4. Multi-phase First-Person attack animation per WeaponType
             if (IsAttacking)
             {
-                float t = Mathf.Clamp01(_attackTimer / Mathf.Max(0.01f, _attackDuration));
-                float arc = Mathf.Sin(t * Mathf.PI);
-
-                if (CurrentComboStep == 1)
-                {
-                    rGripLocalPos = _fpGripBaseLocalPos + new Vector3(Mathf.Lerp(0.18f, -0.36f, t) * arc, 0.04f * arc, 0.16f * arc);
-                    rGripLocalRot = _fpGripBaseLocalRot * Quaternion.Euler(58f * arc, Mathf.Lerp(32f, -72f, t) * arc, -62f * arc);
-                    lHandLocalPos = _fpLeftHandBaseLocalPos + new Vector3(-0.08f * arc, -0.04f * arc, -0.06f * arc);
-                }
-                else if (CurrentComboStep == 2)
-                {
-                    rGripLocalPos = _fpGripBaseLocalPos + new Vector3(Mathf.Lerp(-0.34f, 0.26f, t) * arc, 0.06f * arc, 0.20f * arc);
-                    rGripLocalRot = _fpGripBaseLocalRot * Quaternion.Euler(55f * arc, Mathf.Lerp(-62f, 48f, t) * arc, 58f * arc);
-                    lHandLocalPos = _fpLeftHandBaseLocalPos + new Vector3(0.06f * arc, 0.03f * arc, 0.10f * arc);
-                }
-                else
-                {
-                    rGripLocalPos = _fpGripBaseLocalPos + new Vector3(-0.10f * arc, Mathf.Lerp(0.24f, -0.20f, t) * arc, 0.28f * arc);
-                    rGripLocalRot = _fpGripBaseLocalRot * Quaternion.Euler(Mathf.Lerp(-42f, 82f, t) * arc, -16f * arc, 0f);
-                    lHandLocalPos = _fpLeftHandBaseLocalPos + new Vector3(0.08f * arc, Mathf.Lerp(0.16f, -0.12f, t) * arc, 0.20f * arc);
-                }
+                float normTime = _attackTimer / Mathf.Max(0.01f, _attackDuration);
+                EvaluateFirstPersonAttackPose(normTime, out Vector3 swingPos, out Quaternion swingRot);
+                rGripLocalPos += swingPos;
+                rGripLocalRot = rGripLocalRot * swingRot;
             }
 
             Vector3 rGripWorldPos = camTransform.TransformPoint(rGripLocalPos);
@@ -1489,55 +1572,33 @@ namespace StealthGame.Player
 
             Quaternion socketLocalRot = rightHandWeaponSocket != null
                 ? rightHandWeaponSocket.localRotation
-                : Quaternion.LookRotation(Vector3.up, Vector3.forward);
+                : Quaternion.LookRotation(Vector3.right, Vector3.back) * Quaternion.Euler(26f, 0f, 0f);
             Vector3 socketLocalPos = rightHandWeaponSocket != null
                 ? rightHandWeaponSocket.localPosition
-                : new Vector3(-0.038f, 0.082f, 0.01f);
+                : new Vector3(0.078f, -0.032f, -0.008f);
 
             Quaternion targetRightHandRot = rGripWorldRot * Quaternion.Inverse(socketLocalRot);
             Vector3 targetRightWristPos = rGripWorldPos - (targetRightHandRot * socketLocalPos);
 
-            Vector3 rElbowAnchor = camTransform.TransformPoint(new Vector3(0.42f, -0.44f, 0.16f));
+            Vector3 rArmBoneLocalAxis = _rightHandBone.localPosition.sqrMagnitude > 0.0001f
+                ? _rightHandBone.localPosition.normalized
+                : Vector3.right;
+            bool isSyntyRig = Mathf.Abs(rArmBoneLocalAxis.x) > Mathf.Abs(rArmBoneLocalAxis.y);
+            Vector3 rPalmLocalAxis = isSyntyRig ? Vector3.down : Vector3.left;
+
+            // Orient the right forearm from the lower-right camera corner smoothly into the wrist without detaching Hand_R.localPosition
+            Vector3 rElbowAnchor = camTransform.TransformPoint(new Vector3(0.38f, -0.42f, 0.14f));
             Vector3 rForearmDir = (targetRightWristPos - rElbowAnchor).normalized;
-            float rForearmLen = Mathf.Clamp(_rightHandBone.localPosition.magnitude, 0.22f, 0.34f);
-            Vector3 rElbowWorldPos = targetRightWristPos - rForearmDir * rForearmLen;
 
-            Vector3 rShoulderAnchor = camTransform.TransformPoint(new Vector3(0.42f, -0.34f, -0.14f));
-            Vector3 rUpperArmDir = (rElbowWorldPos - rShoulderAnchor).normalized;
-            float rUpperArmLen = Mathf.Clamp(_rightLowerArmBone.localPosition.magnitude, 0.22f, 0.34f);
+            _rightLowerArmBone.rotation = AlignBoneAxisWithWorldDir(
+                rArmBoneLocalAxis,
+                rPalmLocalAxis,
+                rForearmDir,
+                targetRightHandRot * rPalmLocalAxis);
 
-            _rightUpperArmBone.position = rElbowWorldPos - rUpperArmDir * rUpperArmLen;
-            _rightUpperArmBone.rotation = Quaternion.LookRotation(camTransform.up, rUpperArmDir);
-
-            _rightLowerArmBone.position = rElbowWorldPos;
-            _rightLowerArmBone.rotation = Quaternion.LookRotation(targetRightHandRot * Vector3.left, rForearmDir);
-
-            _rightHandBone.position = targetRightWristPos;
+            // Translate Elbow_R so its child Hand_R lands at targetRightWristPos while preserving exact bindpose bone length
+            _rightLowerArmBone.position += (targetRightWristPos - _rightHandBone.position);
             _rightHandBone.rotation = targetRightHandRot;
-
-            if (_leftHandBone != null && _leftLowerArmBone != null && _leftUpperArmBone != null)
-            {
-                Vector3 lWristWorldPos = camTransform.TransformPoint(lHandLocalPos);
-                Quaternion lHandWorldRot = camTransform.rotation * lHandLocalRot * Quaternion.Inverse(Quaternion.LookRotation(Vector3.up, Vector3.forward));
-
-                Vector3 lElbowAnchor = camTransform.TransformPoint(new Vector3(-0.42f, -0.46f, 0.14f));
-                Vector3 lForearmDir = (lWristWorldPos - lElbowAnchor).normalized;
-                float lForearmLen = Mathf.Clamp(_leftHandBone.localPosition.magnitude, 0.22f, 0.34f);
-                Vector3 lElbowWorldPos = lWristWorldPos - lForearmDir * lForearmLen;
-
-                Vector3 lShoulderAnchor = camTransform.TransformPoint(new Vector3(-0.42f, -0.34f, -0.14f));
-                Vector3 lUpperArmDir = (lElbowWorldPos - lShoulderAnchor).normalized;
-                float lUpperArmLen = Mathf.Clamp(_leftLowerArmBone.localPosition.magnitude, 0.22f, 0.34f);
-
-                _leftUpperArmBone.position = lElbowWorldPos - lUpperArmDir * lUpperArmLen;
-                _leftUpperArmBone.rotation = Quaternion.LookRotation(camTransform.up, lUpperArmDir);
-
-                _leftLowerArmBone.position = lElbowWorldPos;
-                _leftLowerArmBone.rotation = Quaternion.LookRotation(lHandWorldRot * Vector3.right, lForearmDir);
-
-                _leftHandBone.position = lWristWorldPos;
-                _leftHandBone.rotation = lHandWorldRot;
-            }
         }
 
         private void OnGUI()
@@ -1551,10 +1612,9 @@ namespace StealthGame.Player
                 _hudBarTex.Apply();
             }
 
-            // Red damage flash border on direct hit
             if (_damageFlashTimer > 0f)
             {
-                GUI.color = new Color(0.9f, 0.1f, 0.1f, (_damageFlashTimer / 0.35f) * 0.28f);
+                GUI.color = new Color(0.9f, 0.1f, 0.1f, (_damageFlashTimer / 0.30f) * 0.25f);
                 GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _hudBarTex);
                 GUI.color = Color.white;
             }
@@ -1567,21 +1627,16 @@ namespace StealthGame.Player
             };
             boxStyle.normal.textColor = Color.white;
 
-            // Player Health & Stamina Bars above the weapon box
+            // Player Health Bar
             float hudX = 16f;
             float hudY = Screen.height - 102f;
 
             GUI.color = new Color(0f, 0f, 0f, 0.78f);
             GUI.DrawTexture(new Rect(hudX, hudY, 320f, 20f), _hudBarTex);
-            GUI.DrawTexture(new Rect(hudX + 332f, hudY, 320f, 20f), _hudBarTex);
 
             float hpRatio = Mathf.Clamp01((float)currentHealth / Mathf.Max(1, maxHealth));
             GUI.color = new Color(0.85f, 0.18f, 0.22f, 0.95f);
             GUI.DrawTexture(new Rect(hudX + 2f, hudY + 2f, 316f * hpRatio, 16f), _hudBarTex);
-
-            float stamRatio = Mathf.Clamp01(currentStamina / Mathf.Max(1f, maxStamina));
-            GUI.color = new Color(0.18f, 0.72f, 0.95f, 0.95f);
-            GUI.DrawTexture(new Rect(hudX + 334f, hudY + 2f, 316f * stamRatio, 16f), _hudBarTex);
             GUI.color = Color.white;
 
             GUIStyle barLabelStyle = new GUIStyle(GUI.skin.label)
@@ -1592,34 +1647,22 @@ namespace StealthGame.Player
             };
             barLabelStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(hudX, hudY, 320f, 20f), $"HP: {currentHealth} / {maxHealth}", barLabelStyle);
-            GUI.Label(new Rect(hudX + 332f, hudY, 320f, 20f), $"STAMINA: {Mathf.RoundToInt(currentStamina)} / {Mathf.RoundToInt(maxStamina)}  [Alt / E: Dash]", barLabelStyle);
 
             string weaponStr = equippedWeapon == WeaponType.Sword ? "[1] SWORD  |  2 Spear  |  3 Axe" :
                                equippedWeapon == WeaponType.Spear ? "1 Sword  |  [2] SPEAR  |  3 Axe" :
                                "1 Sword  |  2 Spear  |  [3] AXE";
-            string stanceStr = IsDashing ? "DASHING (Invulnerable)" :
-                               (IsBlocking ? "BLOCKING [RMB]" : (IsCrouching ? "CROUCHING [C]" : "STANDING [C]"));
-            string shieldStr = shieldEquipped ? "ON [G]" : "OFF [G]";
+            string stanceStr = IsCrouching ? "CROUCHING [C]" : "STANDING [C]";
             string viewStr = isThirdPersonView ? "3RD PERSON [V]" : "1ST PERSON [V]";
-            string comboStr = IsAttacking
-                ? $"  >> COMBO {CurrentComboStep}/3! <<"
-                : (IsBlocking ? "  >> SHIELD GUARD <<" : "  [LMB] Attack | [RMB] Block/Parry");
+            string attackStr = IsAttacking ? "  >> ATTACKING <<" :
+                               (_attackCooldownTimer > 0f ? "  [Recovering...]" : "  [LMB / F] Attack");
 
-            GUI.Box(new Rect(16, Screen.height - 76, 652, 58),
-                $" Weapon: {weaponStr}{comboStr}\n Stance: {stanceStr}  |  Shield: {shieldStr}  |  Camera: {viewStr}  |  Armor: [M]",
+            GUI.Box(new Rect(16, Screen.height - 76, 560, 58),
+                $" Weapon: {weaponStr}{attackStr}\n Stance: {stanceStr}  |  Camera: {viewStr}",
                 boxStyle);
 
-            if (_canBackstabPrompt && !IsAttacking)
+            if (!string.IsNullOrEmpty(LastHitMessage) && Time.time - _lastHitMessageTime < 2.4f)
             {
-                GUIStyle critStyle = new GUIStyle(boxStyle);
-                critStyle.normal.textColor = new Color(1f, 0.85f, 0.2f);
-                GUI.Box(new Rect(16, Screen.height - 176, 460, 30),
-                    " >> STEALTH BACKSTAB READY! Press [LMB / F] for 3x Instant Takedown <<", critStyle);
-            }
-
-            if (!string.IsNullOrEmpty(LastHitMessage) && Time.time - _lastHitMessageTime < 2.6f)
-            {
-                GUI.Box(new Rect(16, Screen.height - 140, 620, 32), $" {LastHitMessage}", boxStyle);
+                GUI.Box(new Rect(16, Screen.height - 140, 480, 32), $" {LastHitMessage}", boxStyle);
             }
         }
     }
