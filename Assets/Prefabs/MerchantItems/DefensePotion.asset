@@ -17,3 +17,5 @@ MonoBehaviour:
     the most vicious assaults fail to pierce deep enough to stop you.
   itemIcon: {fileID: -3787448971187316291, guid: 691c20d4d4d1d481887f3426b03e3da8, type: 3}
   itemPrefab: {fileID: 3335950066021624469, guid: 6e417396ba2c5384886fc163b547fe52, type: 3}
+  collectibleType: 4
+  category: 1
