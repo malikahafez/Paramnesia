@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec19845f7c2bf403bb66fd0988d6de48, type: 3}
+  m_Name: Slime
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: Slime
+  collectibleType: 1
+  category: 2
+  description: Dropped by toxic waste zombies and can be used to trade with the merchant.
+  icon: {fileID: 6887453247969514644, guid: 5d22d6677ade74f688b86ab93f394afb, type: 3}
+  modelPrefab: {fileID: 7663370641544235219, guid: f57cfa45a61669e4aaca6e107c041edb, type: 3}

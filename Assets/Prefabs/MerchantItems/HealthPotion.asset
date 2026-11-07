@@ -17,3 +17,5 @@ MonoBehaviour:
     and forces the heart to keep beating.
   itemIcon: {fileID: -5238131088685954733, guid: 6301040a183284855bd8468c7b291b1e, type: 3}
   itemPrefab: {fileID: 7200927917085466066, guid: a84a636a35a83fe408bd4b3d8c2b8058, type: 3}
+  collectibleType: 4
+  category: 1
