@@ -8,12 +8,6 @@ public class MainMenuManager : MonoBehaviour
 
     public void StartGame()
     {
-        // Reset persistent inventory when starting a brand new game
-        if (PlayerInventory.Instance != null)
-        {
-            PlayerInventory.Instance.ResetInventory();
-        }
-
         SceneManager.LoadScene(firstGameSceneName);
     }
 
