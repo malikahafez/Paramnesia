@@ -7,4 +7,7 @@ public class MerchantItemData : ScriptableObject
     [TextArea] public string itemDescription;
     public Sprite itemIcon;
     public GameObject itemPrefab; // 3D model if spawning it physically
+    public CollectibleType collectibleType;
+    public ItemCategory category;
+
 }
