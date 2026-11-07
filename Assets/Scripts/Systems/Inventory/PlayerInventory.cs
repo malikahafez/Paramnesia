@@ -17,23 +17,12 @@ public class PlayerInventory : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Keeps inventory across scenes
+            DontDestroyOnLoad(gameObject); // Optional: keeps inventory across scenes
         }
         else
         {
             Destroy(gameObject);
-            return;
         }
-
-        // Reset inventory counts fresh every time the game/scene starts
-        ResetInventory();
-    }
-
-    // Reset all inventory counts and notify UI
-    public void ResetInventory()
-    {
-        collectibleCounts.Clear();
-        Debug.Log("[PlayerInventory] Inventory has been reset.");
     }
 
     // Add collectibles when picked up
@@ -83,20 +72,20 @@ public class PlayerInventory : MonoBehaviour
         return false; // Not correct collectible type
     }
 
-    // Check if the player has enough key fragments to open a door/gate
+    //check if the player has enough key fragments to open a door/gate
     public bool CheckKeyCount(CollectibleType type, int amount, int reqAmount)
     { 
         if (type == CollectibleType.Key && amount >= reqAmount)
-        {
+        {//enough key fragments
             Debug.Log($"Success! You have {amount} {type}s and you need {reqAmount}");
             return true;
         }
         else if (type == CollectibleType.Key && amount < reqAmount)
-        {
+        {//not enough key fragments
             Debug.Log($"Not Enough! You have {amount} {type}s and you need {reqAmount}");
             return false;
         }
-        
+        //incorrect collectible type (not key)
         Debug.Log($"Wrong collectible type: {type}");
         return false;
     }
