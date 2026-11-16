@@ -1131,8 +1131,10 @@ namespace StealthGame.Player
             int finalDamage = equippedWeapon == WeaponType.Axe ? axeDamage :
                               (equippedWeapon == WeaponType.Spear ? spearDamage : swordDamage);
 
-            Vector3 hitCenter = transform.position + Vector3.up * 1.0f + transform.forward * (effectiveRange * 0.55f);
-            Collider[] hits = Physics.OverlapSphere(hitCenter, attackRadius, enemyHitLayers, QueryTriggerInteraction.Ignore);
+            // A capsule along the swing out to the weapon's stated range, so the spear's extra reach is real (it used to stop ~2.9 m out).
+            Vector3 chest = transform.position + Vector3.up * 1.0f;
+            Vector3 hitCenter = chest + transform.forward * Mathf.Max(0.5f, effectiveRange - attackRadius);
+            Collider[] hits = Physics.OverlapCapsule(chest + transform.forward * 0.5f, hitCenter, attackRadius, enemyHitLayers, QueryTriggerInteraction.Ignore);
 
             bool hitEnemy = false;
             bool hitSurface = false;

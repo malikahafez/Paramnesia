@@ -36,6 +36,12 @@ namespace StealthGame
         [Tooltip("Go limp and fall with the killing blow instead of playing the death animation.")]
         public bool ragdollOnDeath = true;
 
+        [Header("Boss")]
+        [Tooltip("Super armor: hits never flinch, push, turn it or cancel its wind-up, and its health bar is drawn by its AI instead of overhead.")]
+        public bool isBoss;
+        /// <summary>Rewrites each incoming hit before it lands (boss armor, weak points, invulnerability); 0 or less ignores the hit.</summary>
+        public System.Func<int, int> damageFilter;
+
         [Header("References")]
         public EnemyDetection enemyDetection;
         public Animator enemyAnimator;
@@ -124,17 +130,18 @@ namespace StealthGame
         public void TakeDamage(int damage, bool isCriticalBackstab)
         {
             if (IsDead || damage <= 0) return;
+            if (damageFilter != null && (damage = damageFilter(damage)) <= 0) return;
 
             currentHealth = Mathf.Max(0, currentHealth - damage);
             _lastDamagedTime = Time.time;
             _lastHitWasCrit = isCriticalBackstab;
             _aggroTimer = 6.0f;
-            _isWindingUpAttack = false;
+            if (!isBoss) _isWindingUpAttack = false;
             _flashTintColor = isCriticalBackstab
                 ? new Color(1.0f, 0.72f, 0.15f, 1f)
                 : new Color(1.0f, 0.22f, 0.22f, 1f);
             _flashTimer = 0.24f;
-            _flinchTimer = 0.35f;
+            if (!isBoss) _flinchTimer = 0.35f;
 
             Transform playerTransform = GetPlayerTransform();
             if (playerTransform != null)
@@ -143,13 +150,13 @@ namespace StealthGame
                 away.y = 0f;
                 _flinchDirection = away.sqrMagnitude > 0.001f ? away.normalized : -transform.forward;
 
-                if (currentHealth > 0 && away.sqrMagnitude > 0.001f)
+                if (!isBoss && currentHealth > 0 && away.sqrMagnitude > 0.001f)
                 {
                     transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(-_flinchDirection), 0.65f);
                 }
 
                 float knockDist = isCriticalBackstab ? 0.32f : 0.18f;
-                MoveKnockback(_flinchDirection * knockDist);
+                if (!isBoss) MoveKnockback(_flinchDirection * knockDist);
                 if (_ai != null && currentHealth > 0) _ai.OnDamaged(playerTransform.position);
             }
             else
@@ -164,7 +171,7 @@ namespace StealthGame
             {
                 Die();
             }
-            else if (enemyAnimator != null && HasParameter(enemyAnimator, HitTriggerId))
+            else if (!isBoss && enemyAnimator != null && HasParameter(enemyAnimator, HitTriggerId))
             {
                 enemyAnimator.SetTrigger(HitTriggerId);
             }
@@ -500,6 +507,7 @@ namespace StealthGame
 
         private void OnGUI()
         {
+            if (isBoss) return;
             bool isEngaged = !IsDead && (currentHealth < maxHealth || Time.time - _lastDamagedTime < 6f || _isWindingUpAttack || _staggerTimer > 0f);
             bool showBar = isEngaged || (IsDead && Time.time - _deathTime < 2.4f);
             if (!showBar) return;

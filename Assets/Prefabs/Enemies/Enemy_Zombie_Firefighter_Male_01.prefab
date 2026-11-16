@@ -236,6 +236,7 @@ MonoBehaviour:
   minProjectileRange: 3
   dropPrefab: {fileID: 2341778454195115720, guid: 01fce56c20d35a246a98403ce3be6f2b, type: 3}
   ragdollOnDeath: 1
+  isBoss: 0
   enemyDetection: {fileID: 8742471791471213452}
   enemyAnimator: {fileID: 7126105300089709538}
   enemyCollider: {fileID: 7614395166799077319}

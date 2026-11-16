@@ -18,7 +18,8 @@ namespace StealthGame.Editor
         const string ProjectilePath = Enemies + "/Projectile_Slime.prefab";
         const string SlimeMaterial = Enemies + "/Projectile_Slime.mat";
         const string BrutePrefab = Enemies + "/Enemy_Zombie_Brute_01.prefab";
-        const string BruteModel = "Assets/Prefabs/PolygonBossZombies/Prefabs/SM_Chr_ZombieBoss_Brute_01.prefab";
+        // The tank is a big Riot Cop so Level 1 only shows human-shaped zombies; the Synty Brute is saved for the final boss (BossSetup).
+        const string BruteModel = "Assets/Prefabs/PolygonZombies/Prefabs/Zombie_RiotCop_Male_01.prefab";
         const string CreaturePack = "Assets/Animations/Zombies/Creature Pack";
         const string BruteFolder = "Assets/Animations/Zombies/Brute";
         const string BruteController = BruteFolder + "/Brute.controller";
@@ -27,11 +28,11 @@ namespace StealthGame.Editor
         // Strike frames measured by sampling each clip's hand trajectory (seconds into the clip at speed 1).
         public const float ZombieAttackStart = 0.2f, ZombieAttackSpeed = 1.6f; // skips the idle lead-in, no longer crammed into 0.8 s
         const float ZombieClawContact = 1.0f, ZombieThrowRelease = 0.95f;      // right hand at peak forward speed / just before full reach
-        const float PunchStart = 0.4f, PunchSpeed = 0.65f, PunchContact = 0.7f; // one-two clip: skip the jab, hit on the heavy second punch
+        public const float PunchStart = 0.4f, PunchSpeed = 0.65f, PunchContact = 0.7f; // one-two clip: skip the jab, hit on the heavy second punch
         // Swipe: 0.3 s stand-still lead-in skipped; step back, then a ~1 m lunge 1.05-1.30 s. At 0.9x the lunge spans ~17 frames.
-        const float SwipeStart = 0.25f, SwipeSpeed = 0.9f, SwipeContact = 1.28f;
+        public const float SwipeStart = 0.25f, SwipeSpeed = 0.9f, SwipeContact = 1.28f;
         // Roar on spotting the player: skip the still lead-in, rear back, bellow, and cut into the charge as it sustains.
-        const float RoarStart = 0.45f, RoarEnd = 3.0f, RoarSpeed = 1.1f;
+        public const float RoarStart = 0.45f, RoarEnd = 3.0f, RoarSpeed = 1.1f;
         // Tank pace: ~2.2 m/s chase, under the zombies' 3.0 and the player's 4.0 walk (measured 3.1 at full pace).
         const float BruteRunPace = 0.7f;
         static float Windup(float contact, float start, float speed) => (contact - start) / speed;
@@ -47,8 +48,8 @@ namespace StealthGame.Editor
             EnableLookAt(zombie);
             var controller = BuildBruteController();
             BuildProjectile();
-            // The Synty Brute prefab stands 3.7 m; 0.7 makes it ~2.6 m so it fits under house ceilings.
-            ZombieEnemySetup.Build(AssetDatabase.LoadAssetAtPath<GameObject>(BruteModel), controller, "Zombie_Brute_01", 0.7f);
+            // The Riot Cop zombie stands ~1.8 m; 1.2 makes it a head taller than the rest and still under house ceilings.
+            ZombieEnemySetup.Build(AssetDatabase.LoadAssetAtPath<GameObject>(BruteModel), controller, "Zombie_Brute_01", 1.2f);
             ZombieAISetup.ConfigurePrefabs();
             DropEffectsSetup.Setup();
             AssetDatabase.SaveAssets();
@@ -77,8 +78,8 @@ namespace StealthGame.Editor
                 combat.attackCooldown = 3f;
                 combat.attackWindups = new[] { Windup(PunchContact, PunchStart, PunchSpeed), Windup(SwipeContact, SwipeStart, SwipeSpeed) };
                 agent.radius = 0.5f;
-                agent.height = 2.6f;
-                // Eyes sit ~2.6 m up, so a player in reach falls below the vision cone without a wider close-range bypass.
+                agent.height = 2.2f;
+                // Eyes sit ~2 m up, so a player in reach falls below the vision cone without a wider close-range bypass.
                 combat.enemyDetection.proximityRange = 3f;
             }
             else if (IsRanged(name))

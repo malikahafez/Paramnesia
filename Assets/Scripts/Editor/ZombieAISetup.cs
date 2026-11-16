@@ -163,6 +163,7 @@ namespace StealthGame.Editor
         public static void Configure(GameObject root)
         {
             if (root.GetComponent<EnemyDetection>() == null) return;
+            if (root.GetComponent<BossBruteAI>() != null) return; // BossSetup owns the boss; this would swap it back to ZombieAI
             var combat = root.GetComponent<EnemyCombatTarget>();
             if (combat == null) combat = root.AddComponent<EnemyCombatTarget>();
             var agent = root.GetComponent<NavMeshAgent>();

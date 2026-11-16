@@ -239,7 +239,7 @@ namespace StealthGame
 
         void OnDisable() { if (agent != null && agent.enabled && agent.isOnNavMesh) agent.ResetPath(); }
 
-        public void ApplyRootMotion(Vector3 displacement)
+        public virtual void ApplyRootMotion(Vector3 displacement)
         {
             // Animation owns movement, including momentum carried into stops and attacks; only death and hit reactions freeze it.
             if (agent == null || !agent.enabled || !agent.isOnNavMesh || combat.IsDead || combat.IsStaggered || combat.IsFlinching) return;
