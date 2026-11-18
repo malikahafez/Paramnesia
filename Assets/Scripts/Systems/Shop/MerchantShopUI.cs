@@ -19,9 +19,9 @@ public class MerchantShopUI : MonoBehaviour
         RefreshResourceDisplay();
     }
 
-    /// <summary>
+  
     /// Wire each Shop Item Button's OnClick() to this method and pass its MerchantItemData asset!
-    /// </summary>
+ 
     public void TryPurchaseItem(MerchantItemData item)
     {
         if (item == null) return;
