@@ -5,7 +5,7 @@ public class MerchantShopUI : MonoBehaviour
 {
     [Header("Shop Feedback UI")]
     public TextMeshProUGUI merchantFeedbackText;
-    public TextMeshProUGUI resourceCounterText; // Optional: shows current Bones / Slime / Hearts
+    public TextMeshProUGUI resourceCounterText;
 
     [TextArea]
     public string notEnoughResourcesMessage = "Sorry, but the magic recipe book says I need more ingredients to make this for you.";
@@ -19,24 +19,14 @@ public class MerchantShopUI : MonoBehaviour
         RefreshResourceDisplay();
     }
 
-  
-    /// Wire each Shop Item Button's OnClick() to this method and pass its MerchantItemData asset!
- 
     public void TryPurchaseItem(MerchantItemData item)
     {
-        if (item == null) return;
-
-        // NOTE: Match these method names to your PlayerInventory.cs from MCP Task 2
+        if (item == null || PlayerInventory.Instance == null) return;
         var inv = PlayerInventory.Instance;
-        if (inv == null)
-        {
-            Debug.LogError("PlayerInventory.Instance not found in scene!");
-            return;
-        }
 
-        // 1. Check if player has enough monster drops
+        // 1. Check monster drop costs
         bool hasEnough = inv.GetCollectibleCount(CollectibleType.Bone) >= item.bonesCost &&
-                         inv.GetCollectibleCount(CollectibleType.SlimeFlask) >= item.slimeCost &&
+                         inv.GetCollectibleCount(CollectibleType.Slime) >= item.slimeCost &&
                          inv.GetCollectibleCount(CollectibleType.Heart) >= item.heartsCost;
 
         if (!hasEnough)
@@ -46,19 +36,19 @@ public class MerchantShopUI : MonoBehaviour
             return;
         }
 
-        // 2. Check carry limit (max 2 potions/powerups per GDD Rule 3)
-        if (inv.GetPotionCount(item.effectType) >= item.maxCarryLimit)
+        // 2. Enforce max carry limit (max 2)
+        if (!inv.CanCarryMore(item.collectibleType, item.maxCarryLimit))
         {
             if (merchantFeedbackText != null)
                 merchantFeedbackText.text = maxCapacityMessage;
             return;
         }
 
-        // 3. Deduct resources & grant item
+        // 3. Deduct monster drops and add the potion to PlayerInventory
         inv.ConsumeCollectible(CollectibleType.Bone, item.bonesCost);
-        inv.ConsumeCollectible(CollectibleType.SlimeFlask, item.slimeCost);
+        inv.ConsumeCollectible(CollectibleType.Slime, item.slimeCost);
         inv.ConsumeCollectible(CollectibleType.Heart, item.heartsCost);
-        inv.AddPotion(item.effectType, 1);
+        inv.AddCollectible(item.collectibleType, 1);
 
         if (merchantFeedbackText != null)
             merchantFeedbackText.text = $"{purchaseSuccessMessage} (+1 {item.itemName})";
@@ -72,7 +62,7 @@ public class MerchantShopUI : MonoBehaviour
         var inv = PlayerInventory.Instance;
         resourceCounterText.text =
             $"Bones: {inv.GetCollectibleCount(CollectibleType.Bone)}  |  " +
-            $"Slime: {inv.GetCollectibleCount(CollectibleType.SlimeFlask)}  |  " +
+            $"Slime: {inv.GetCollectibleCount(CollectibleType.Slime)}  |  " +
             $"Hearts: {inv.GetCollectibleCount(CollectibleType.Heart)}";
     }
 }

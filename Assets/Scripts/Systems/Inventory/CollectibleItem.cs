@@ -5,6 +5,7 @@ public class CollectibleItem : MonoBehaviour
     [Header("Collectible Settings")]
     [SerializeField] private CollectibleType collectibleType;
     [SerializeField] private int dropAmount = 1;
+    
     [Tooltip("Played in place when picked up; outlives the collectible.")]
     [SerializeField] private ParticleSystem pickupBurst;
 

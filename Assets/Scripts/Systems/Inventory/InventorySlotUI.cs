@@ -21,7 +21,11 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler
         inventoryManager = manager;
 
         if (selectionHighlight != null) selectionHighlight.enabled = false;
-        if (countText != null) countText.gameObject.SetActive(false);
+        if (countText != null){ 
+            countText.gameObject.SetActive(true);
+            countText.text = $"x{count}";
+            // countText.gameObject.SetActive(false);
+            }
         // Safely extract sprite icon via reflection or direct check
         Sprite icon = ExtractIcon(itemData);
         if (iconImage != null)
@@ -40,14 +44,15 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler
 
     private Sprite ExtractIcon(ScriptableObject obj)
     {
-        if (obj == null) return null;
+        // if (obj == null) return null;
         if (obj is MerchantItemData merchant) return merchant.itemIcon;
-
-        // Fallback reflection for world collectible asset fields (e.g., itemIcon, icon, sprite)
-        var field = obj.GetType().GetField("itemIcon") ?? obj.GetType().GetField("icon") ?? obj.GetType().GetField("sprite");
-        if (field != null) return field.GetValue(obj) as Sprite;
-
+        if (obj is ItemData data) return data.icon;
         return null;
+        // Fallback reflection for world collectible asset fields (e.g., itemIcon, icon, sprite)
+        // var field = obj.GetType().GetField("itemIcon") ?? obj.GetType().GetField("icon") ?? obj.GetType().GetField("sprite");
+        // if (field != null) return field.GetValue(obj) as Sprite;
+
+        // return null;
     }
 
     public void OnPointerClick(PointerEventData eventData)

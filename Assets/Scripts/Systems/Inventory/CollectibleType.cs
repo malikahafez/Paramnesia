@@ -4,5 +4,8 @@ public enum CollectibleType
     Slime,
     Heart,
     Key,
-    Potion
+    HealthPotion,
+    AttackPlusPotion,
+    DefensePlusPotion,
+    InvulnerabilityPotion
 }

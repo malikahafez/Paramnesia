@@ -179,20 +179,20 @@ public class ResidentBehaviour : MonoBehaviour
         var inv = PlayerInventory.Instance;
         if (inv == null) return false;
         return inv.GetCollectibleCount(CollectibleType.Bone) >= requiredBones &&
-               inv.GetCollectibleCount(CollectibleType.SlimeFlask) >= requiredSlime &&
+               inv.GetCollectibleCount(CollectibleType.Slime) >= requiredSlime &&
                inv.GetCollectibleCount(CollectibleType.Heart) >= requiredHearts;
     }
     private void CompleteQuestAndReward()
     {
         var inv = PlayerInventory.Instance;
         inv.ConsumeCollectible(CollectibleType.Bone, requiredBones);
-        inv.ConsumeCollectible(CollectibleType.SlimeFlask, requiredSlime);
+        inv.ConsumeCollectible(CollectibleType.Slime, requiredSlime);
         inv.ConsumeCollectible(CollectibleType.Heart, requiredHearts);
 
-        // Give rewards per GDD p. 42-43 (spare key fragment + potions)
-        inv.AddCollectible(CollectibleType.KeyFragment, rewardKeyFragments);
-        inv.AddPotion(ShopItemEffect.HealthPotion, 1);
-        inv.AddPotion(ShopItemEffect.AttackPlusPotion, 1);
+        // Give rewards (spare key fragment + potions)
+        inv.AddCollectible(CollectibleType.Slime, rewardKeyFragments);
+        inv.AddCollectible(CollectibleType.HealthPotion, 2);
+        inv.AddCollectible(CollectibleType.AttackPlusPotion, 1);
 
         currentQuestStatus = QuestStatus.Completed;
         anim.SetBool("celebrate", true);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,9 @@ public class PlayerInventory : MonoBehaviour
     // Optional: Events so UI updates automatically when counts change
     public delegate void OnCollectibleChanged(CollectibleType type, int newAmount);
     public event OnCollectibleChanged OnCollectibleChangedEvent;
+
+    // Subscribe your PlayerHealth / PlayerCombat script to this event to apply healing & 10s buffs!
+    public event Action<CollectibleType> OnPotionUsedEvent;
 
     private void Awake()
     {
@@ -65,39 +69,51 @@ public class PlayerInventory : MonoBehaviour
     // Spend collectibles (for the store)
     public bool ConsumeCollectible(CollectibleType type, int amount)
     {
-        if (type != CollectibleType.Key)
+        if (type == CollectibleType.Key)
         {
-            int currentCount = GetCollectibleCount(type);
-            if (currentCount >= amount)
-            {
-                collectibleCounts[type] -= amount;
-                Debug.Log($"Spent {amount} of {type}. Remaining: {collectibleCounts[type]}");
-                OnCollectibleChangedEvent?.Invoke(type, GetCollectibleCount(type));
-                return true; // Purchase successful
-            }
-
-            Debug.Log($"Not enough {type} to buy this item!");
-            return false; // Not enough currency
+            Debug.Log("Cannot spend Key Fragments!");
+            return false;
         }
-        Debug.Log($"Cannot buy with {type}");
-        return false; // Not correct collectible type
+
+        int currentCount = GetCollectibleCount(type);
+        if (currentCount >= amount)
+        {
+            collectibleCounts[type] -= amount;
+            Debug.Log($"Used/Spent {amount} of {type}. Remaining: {collectibleCounts[type]}");
+            OnCollectibleChangedEvent?.Invoke(type, GetCollectibleCount(type));
+            return true;
+        }
+
+        Debug.Log($"Not enough {type}!");
+        return false;
     }
 
     // Check if the player has enough key fragments to open a door/gate
     public bool CheckKeyCount(CollectibleType type, int amount, int reqAmount)
-    { 
-        if (type == CollectibleType.Key && amount >= reqAmount)
+    {
+        return type == CollectibleType.Key && amount >= reqAmount;
+    }
+    public bool IsPotion(CollectibleType type)
+    {
+        return type == CollectibleType.HealthPotion ||
+               type == CollectibleType.AttackPlusPotion ||
+               type == CollectibleType.DefensePlusPotion ||
+               type == CollectibleType.InvulnerabilityPotion;
+    }
+    public bool CanCarryMore(CollectibleType type, int maxLimit = 2)
+    {
+        return GetCollectibleCount(type) < maxLimit;
+    }
+    public bool UsePotion(CollectibleType type)
+    {
+        if (!IsPotion(type)) return false;
+
+        if (ConsumeCollectible(type, 1))
         {
-            Debug.Log($"Success! You have {amount} {type}s and you need {reqAmount}");
+            Debug.Log($"[PlayerInventory] Activated {type}!");
+            OnPotionUsedEvent?.Invoke(type);
             return true;
         }
-        else if (type == CollectibleType.Key && amount < reqAmount)
-        {
-            Debug.Log($"Not Enough! You have {amount} {type}s and you need {reqAmount}");
-            return false;
-        }
-        
-        Debug.Log($"Wrong collectible type: {type}");
         return false;
     }
 }
