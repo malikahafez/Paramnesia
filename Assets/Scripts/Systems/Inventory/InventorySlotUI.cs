@@ -57,6 +57,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        Debug.Log($"[SlotClick] Clicked {name}, manager is {(inventoryManager != null ? "OK" : "NULL")}");
         if (inventoryManager != null)
         {
             inventoryManager.SelectGenericItem(rawItemData, collectibleType, this);
